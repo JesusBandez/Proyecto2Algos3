@@ -1,49 +1,60 @@
 package ve.usb.grafoLib
-import java.util.PriorityQueue
 
-// Determina el AMC del grafo suministrado basandose en CD
+
 public class ArbolMinimoCobertorKruskal(val g: GrafoNoDirigido) {
+    /*
+    Clase para aplicar el algoritmo de Kruskal en un grafo g.
+    Se usa la libreria de conjuntos disjuntos contenida en este paquete para generar
+    el arbol minimo
+    */
 
-    // Se crea el conjunto vacio para el Arbol
-    var arbol : MutableList<Arista> = mutableListOf()
-
-    // Al crear este objeto se aplica la operacion make set para todos los vertices del grafo
-    //var conjuntosDisjuntos = ConjuntosDisjuntos(g.obtenerNumeroDeVertices()
-    var conjuntosDisjuntos = ConjuntosDisjuntos(g.obtenerNumeroDeVertices())
-    
-
-    // Ordena las aristas de g segun su peso
-    var aristas = g.aristas().sortedBy { it.peso }
-    
-    
-    
-    // Variable donde se almacena la suma de los pesos de las aristas del Arbol Minimo Cobertor
-    var pesos : Double = 0.0
-
-    
+    // Lista para llevar los arboles que conforman el arbol y variable para el peso del arbol
+    var ladosDelArbolMinCobertor: MutableList<Arista> = mutableListOf()
+    var pesoDelArbol: Double = 0.0
     init{
-        // Se recorren cada arista y se van añadiendo al arbol si no se encuentran en la misma componente conexa
+
+        var conjDisjuntos = ConjuntosDisjuntos(g.obtenerNumeroDeVertices())
+
+        // Ordenar la lista de aristas por peso
+        var aristas = g.aristas() as MutableList
+        aristas.sortBy {it.peso}
+
+        // Aplicar el algoritmo
         for (arista in aristas){
             var u: Int = arista.cualquieraDeLosVertices()
             var v: Int = arista.elOtroVertice(u)
-            if (conjuntosDisjuntos.encontrarConjunto(u) != conjuntosDisjuntos.encontrarConjunto(v)){
-                arbol.add(arista)
-                conjuntosDisjuntos.union(u,v)
-                pesos+=arista.peso()
+
+            if (conjDisjuntos.encontrarConjunto(u) != 
+                    conjDisjuntos.encontrarConjunto(v)){
+                
+
+                ladosDelArbolMinCobertor.add(arista)
+                pesoDelArbol += arista.peso()
+
+                conjDisjuntos.union(u, v)
             }
         }
-        // Tiempo de ejecucion : O(|E|log|V|)
     }
 
-    // Retorna un objeto iterable que contiene los lados del árbol mínimo cobertor.
+    // Retorna una lista que contiene los lados que pertenecen al
+    // arbol minimo cobertor
     fun obtenerLados() : Iterable<Arista> {
-        return arbol
-        // Tiempo de ejecucion : O(1), solo se retorna un valor
+    /* 
+     Precondicion: true
+     Prostcoindicion: Se retorna una lista con los lados del arbol cobertor minimo
+     Tiempo O(1)
+    */
+        return ladosDelArbolMinCobertor
+	
     }
     
-    // Retorna el peso del árbol mínimo cobertor. El cual es la suma del peso de cada lado del mismo
+    // Retorna el peso del árbol mínimo cobertor. 
     fun obtenerPeso() : Double {
-        return pesos
-        // Tiempo de ejecucion : O(1), solo se retorna un valor
+   /* 
+     Precondicion: true
+     Prostcoindicion: Se retorna el peso del arbol cobertor
+     Tiempo O(1)
+    */
+        return pesoDelArbol
     }
 }

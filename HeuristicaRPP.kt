@@ -96,9 +96,18 @@ fun main(args: Array<String>) {
 
         // Si es par se obtiene el ciclo euleriano
         if (par){
+            // Conseguir el grafo dirigido asociado a gPrim
+            var gPrimDirigidoAsociado = GrafoDirigido(gPrim.obtenerNumeroDeVertices())
 
-            // Modificar ciclo euleriano para usarlo con grafos no drigidos
-            ciclo = CicloEuleriano(gPrim).obtenerCicloEuleriano()
+            // Para cada vertice en el grafo no dirigido, se consiguen los arcos que salen de el
+            // y se agregan al grafo dirigo asociado
+            for (verticeInicial in 0 until gPrim.obtenerNumeroDeVertices()){
+                for (lado in gPrim.adyacentes(verticeInicial)){
+                    gPrimDirigidoAsociado.agregarArco(Arco(verticeInicial, lado.elOtroVertice(verticeInicial), lado.peso()))
+                }
+            }
+            
+            ciclo = CicloEuleriano(gPrimDirigidoAsociado).obtenerCicloEuleriano() as MutableList<Arista>
             
         }else{
 
@@ -107,7 +116,7 @@ fun main(args: Array<String>) {
     }else{
         // Obtenemos las componentes conexas de G' para hacer Gt
         
-        val compConexas = ComponentesConexasDFS(gPrim).obtenerComponentesConexas()
+        val compConexas = ComponentesConexasDFS(gPrim)
     }
 
     for (arista in ciclo){

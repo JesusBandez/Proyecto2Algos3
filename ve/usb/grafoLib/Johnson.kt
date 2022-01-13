@@ -1,158 +1,169 @@
 package ve.usb.grafoLib
 
-// Implementacion del Algoritmo de Johnson para hallar los CCM entre todos los pares de vertices de un grafo
-// El algoritmo se apoya a su vez en los algoritmos de BellmanFord, usando sus resultados para hallar un grafo equivalente G'
-// con lados no negativos en caso de tenerlos para luego llamar al Algoritmo de Dijkstra
-// Es una buena opcion para grafos dispersos y es mas rapido y consume menos espacio que el algoritmo de Floyd-Warshall
+
 public class Johnson(val g: GrafoDirigido) {
+/*
+ Clase con la implementación del algoritmo de Johnson para conseguir los 
+ costos minimos entre todos los pares de vertices. En caso de que hay un ciclo negativo.
+ no es posible encontrar estos caminos por lo que se arroja una runtime exception cuando
+ se intente acceder a esos metodos
+ */
 
-    // Precondicion : g debe ser un digrafo
-    // Postcondicion : se obtienen los CCM entre todos los vertices de G en caso de que este no tengo ciclos negativos
+    // Matriz de las distancias entre los pares
+    var d: Array<Array<Double>> = Array(g.obtenerNumeroDeVertices(), {Array(g.obtenerNumeroDeVertices(), {Double.POSITIVE_INFINITY})})
+    // Lista con los clases dijkstras que se crean para cada vertice
+    var objetosDijs: MutableList<Dijkstra> = mutableListOf()
 
-    // Variables para almacenar los datos a usar en el algoritmo
-    var g1 : GrafoDirigido
-    var bellman : BellmanFord
-    var s : Int
-    var h : MutableList<Double> = mutableListOf()
-    var distancias : Array<Array<Double>>
-    var ciclo : Boolean
-    var listaDijkstra : MutableList<Dijkstra> = mutableListOf()
+    // Variable para saber si hay un ciclo negativo
+    var hayCicloNegativo: Boolean = false
 
-    init{
+    // Variable que lleva la clase bellmanford
+    var bellman: BellmanFord
+
+    // Arreglo que hace de funcion h
+    var h: Array<Double> = Array(g.obtenerNumeroDeVertices()+1, {-1.0})
+
+    init {
+        // Crear grafo G'        
+        var gPrima = GrafoDirigido(g.obtenerNumeroDeVertices()+1)
+        // el vertice s es el ultimo vertice del grafo
+        var s: Int = g.obtenerNumeroDeVertices()
+
+        // Agregar a gPrima los arcos en g    
+        for (arco in g.arcos()){
+            gPrima.agregarArco(
+                Arco(arco.fuente(), arco.sumidero(), arco.peso())
+            )
+        }
         
-        // El vertice s que se añadirá al grafo tendra el valor del numero de lados +1 del grafo original
-        s = g.obtenerNumeroDeLados()
-
-        // Se crea el nuevo grafo G' con V + 1 vertices y se le añaden todos los arcos de G
-        g1 = GrafoDirigido(s)
-        for (arco in g.arcos()){
-            g1.agregarArco(arco)
-        }
-        // Tiempo de esta operacion : O(E) donde E es el numero de arcos de G
-
-        // Posteriormente se le añaden arcos con coste 0 desde el nuevo vertice s hasta todos los demas vertices
-        for (v in 0..g.obtenerNumeroDeLados()-1){
-            g1.agregarArco(Arco(s,v,0.0))
-        }
-        // Tiempo de esta operacion : O(E) donde E es el numero de arcos de G
-
-        // Se llama al algoritmo de BellmanFord con G' y el vertice s para obtener los pesos h(v)
-        // Que representan el costo de ir desde s hasta v
-        bellman = BellmanFord(g1,s)
-        // Tiempo de esta operacion : O(VE) donde E es el numero de arcos de G y V el numero de vertices
-
-        // Si se detecta un ciclo negativo no se puede proceder mas. Se termina el algoritmo
-        if (bellman.tieneCicloNegativo() == true){
-            println("El grafo contiene el siguiente ciclo negativo : ")
-            println(bellman.obtenerCicloNegativo())
-            ciclo = true
-            throw RuntimeException("Como el grafo tiene ciclo negativo, el algoritmo termina")
-        }
-        ciclo = false
-
-        // Se añaden nodos con el respectivo valor del CCM entre s y v por cada vertice
-        for (v in 0..g1.obtenerNumeroDeLados()-1){
-            h.add(bellman.costoHasta(v))
+        // Agregar los arcos que van de s a todos los vertices del grafo
+        for (vertice in 0 until g.obtenerNumeroDeVertices()){
+            gPrima.agregarArco(
+                Arco(s, vertice, 0.0))
         }
 
-        // Se actualizan los pesos de los arcos en el grafo original con los valores obtenidos en BellmanFord
-        // Este procedimiento garantiza que todos los arcos tendran pesos no negativos
-        // Permitiendo asi hacer uso del algoritmo de Dijkstra 
-        for (arco in g.arcos()){
+        // Ejecutar bellmanFord y comprobar si hay ciclo negativo
+        bellman = BellmanFord(gPrima, s)
+        if (bellman.tieneCicloNegativo()){
+            hayCicloNegativo = true
 
-            var u : Int = arco.fuente()
-            var v : Int = arco.sumidero()
-            arco.peso = arco.peso + h[u] - h[v]
-        }
-    
-        // Tiempo de esta operacion : O(E) donde E es el numero de arcos de G
+        } else {
+            // En caso de no haber ciclo negativo
 
-
-        // Se crea la matriz donde se almacenaran las distancias entre todos los vertices
-        // Dicha matriz tiene dimensiones V x V donde V es el numero de vertices de G
-        // Y se crea como arreglos anidados dentro de otro arreglo representando las filas y columnas
-        // En un inicio cada valor de la matriz es infinito ya que solo se modificaran cuando haya un camino desde 
-        // un vertice u hasta otro vertice v
-        // Por lo tanto los valores que queden en infinito representan que no hay camino entre esos dos vertices
-        distancias = Array(g.obtenerNumeroDeLados()){Array(g.obtenerNumeroDeLados()) {Double.MAX_VALUE} }
-
-        // Se aplica el algoritmo de Dijkstra desde cada vertice de G con los costos reponderados para obtener los CCM entre todos los vertices
-        // Los costos se guardan en la matriz distancias
-        for (u in 0..g.obtenerNumeroDeLados()-1){
-
-            var dijkstra = Dijkstra(g,u)
-
-            for (v in 0..g.obtenerNumeroDeLados()-1){
-
-                distancias[u][v] = dijkstra.costoHasta(v) + h[v] - h[u]
+            // Se consigue los valores de la funcion h
+            for (vertice in 0 until gPrima.obtenerNumeroDeVertices()){
+                h[vertice] = bellman.costoHasta(vertice)
             }
-            listaDijkstra.add(dijkstra)
+
+            // Se crea un tercer grafo que contiene los pesos modificados con los nuevos
+            // valores de tal forma que los arcos tengan pesos mayores o iguales a 0
+            var gPesosModificados = GrafoDirigido(gPrima.obtenerNumeroDeVertices())
+            for (arco in gPrima.arcos()){
+
+                gPesosModificados.agregarArco(Arco(arco.fuente(),
+                    arco.sumidero(),
+                    arco.peso() + h[arco.fuente()] - h[arco.sumidero()]))
+            }        
+            
+            // Ejecutar Dijkstra para cada vertice en el grafo g
+            for (verticeFuente in 0 until g.obtenerNumeroDeVertices()){
+                var dijkstra = Dijkstra(gPesosModificados, verticeFuente)
+                for (verticeFinal in 0 until g.obtenerNumeroDeVertices()){
+                    d[verticeFuente][verticeFinal] = dijkstra.costoHasta(verticeFinal) + h[verticeFinal] - h[verticeFuente]
+                }
+
+                objetosDijs.add(dijkstra)
+            }
         }
-        // Tiempo de esta operacion : O(V * E * log V ) ya que Dijkstra se implementa con una cola de prioridad
 
     }
 
-    // Retorna si existe o no un ciclo negativo mirando lo obtenido por el algoritmo de BellmanFord
-    fun hayCicloNegativo() : Boolean {
-
-        // Precondicion : ninguna
-        // Postcondicion : se retorna true si existe un ciclo negativo, false en caso contrario
-
-        return ciclo
-        // Tiempo de ejecucion : O(1)
-    }
     
-    // Retorna la matriz con las distancias de los caminos de costo mínimo obtenida aplicando Dijkstra sobre G
+    fun hayCicloNegativo() : Boolean {
+        /*Retorna true si hay un ciclo negativo en el grafo
+        precondi: True
+        postcond: Dice si hay un ciclo negativo en el grafo
+        tiempo de ejecucion: O(1)
+        */
+        return hayCicloNegativo
+     }
+    
     fun obtenerMatrizDistancia() : Array<Array<Double>> { 
+        /* Retorna la matriz con las distancias de los caminos de costo mínimo
+        entre todos los pares de vértices. Arroha runtime Exception si hay un lado negativo
+        precondi: true
+        postcond: retorna la matriz de distancias
+        tiempo de ejecucion: O(1)
+        */
 
-        // Precondicion : ninguna
-        // Postcondicion : se retorna una matriz donde sus valores corresponden al costo del CCM entre cada par de vertices
-        // si no hay camino entre un par de vertices el valor es infinito
-        if (hayCicloNegativo()){
+        if(this.hayCicloNegativo()){
             throw RuntimeException("El grafo tiene un ciclo negativo")
         }
-        return distancias
-        // Tiempo de ejecucion : O(1)
+
+        return d
     } 
     
-    // Retorna la distancia del camino de costo mínimo desde el vértice u hasta el vértice v. Viendo el respectivo valor
-    // en la matriz de distancias
-    fun costo(u: Int, v: Int) : Double { 
 
-        // Precondicion : u y v deben pertenecer al grafo
-        // Postcondicion : se retorna el costo del CCM entre u y v
-        if (hayCicloNegativo()){
+    fun costo(u: Int, v: Int) : Double {
+        /*  Metodo para conseguir la distancia del camino de costo mínimo desde u hasta v.
+        En caso de que alguno no exista o hay un ciclo negativo en el grafo, se arroja RuntimeException
+        precondi: u y v pertenecen al grafo, y el grafo no tiene ciclos negativos
+        postcond: Se retorna la distancia entre u y v
+        tiempo de ejecucion: O(1)
+        */
+        if (!(0 <= u && u < g.obtenerNumeroDeVertices()) || !(0 <= v && v < g.obtenerNumeroDeVertices()) ) {
+            throw RuntimeException("${u} o ${v} no pertenece al grafo")
+        }
+        if (this.hayCicloNegativo()){
             throw RuntimeException("El grafo tiene un ciclo negativo")
         }
-        if (u<0 || u>g.obtenerNumeroDeLados()-1 || v<0 || u>g.obtenerNumeroDeLados()-1){
-            throw RuntimeException("Alguno de los vertices no pertenece al grafo")
+
+        return d[u][v]
+
+     }
+
+    fun existeUnCamino(u: Int, v: Int) : Boolean {
+        /* Retorna un booleano que afirma si hay un camino desde u hasta v.
+        Si alguno de los dos vértices  no existe, se arroja un RuntimeException.
+        Igualmente si hay un ciclo negativo se lanza una RuntimeException 
+        precondi: u y v pertenecen al grafo, y el grafo no tiene ciclos negativos
+        postcond: Se retorna si existe un camino entre u y v
+        tiempo de ejecucion: O(1)
+        */
+        if (!(0 <= u && u < g.obtenerNumeroDeVertices()) || !(0 <= v && v < g.obtenerNumeroDeVertices()) ) {
+            throw RuntimeException("${u} o ${v} no pertenece al grafo")
         }
-        return distancias[u][v]
-        // Tiempo de ejecucion : O(1)
-    }
-
-    // Retorna cierto si hay un camino desde u hasta el vértice v.
-    // Para determinar si hay un camino entre u y v compara el valor correspondiente en la matriz de distancias
-    // Si el valor no es infinito, entonces hay un camino entre u y v
-    fun existeUnCamino(u: Int, v: Int) : Boolean { 
-
-        // Precondicion : u y v deben pertenecer al grafo
-        // Postcondicion : se retorna true si hay un camino entre u y v, false en caso contrario
-        if (hayCicloNegativo()){
+        if (this.hayCicloNegativo()){
             throw RuntimeException("El grafo tiene un ciclo negativo")
         }
-        return distancias[u][v] != Double.MAX_VALUE
-        // Tiempo de ejecucion : O(1)
-    }
 
-    // Retorna los arcos del camino de costo mínimo desde u hasta v llamando a los objetos tipo Dijkstra almacenados
-    // durante la ejecucion del algoritmo para apoyarse en su funcion de obtener el CCM
+        return d[u][v] != Double.POSITIVE_INFINITY
+    }     
+
     fun obtenerCaminoDeCostoMinimo(u: Int, v: Int) : Iterable<Arco> { 
+        /* Retorna los arcos del camino de costo mínimo que va desde u hasta v.
+        Si un vertice no existe en el grafo o hay un ciclo negativo, se arroja una runtime exception
+        precondicion: u y v pertenecen al grafo
+        postcondicion: se retorna un iterable con los arcos del camino de costo minimo
+        Tiempo de ejecucion: O(n), con n siendo la cantidad de arcos que tiene el camino de costo minimo
+ */
+        if (!(0 <= u && u < g.obtenerNumeroDeVertices()) || !(0 <= v && v < g.obtenerNumeroDeVertices()) ) {
+            throw RuntimeException("${u} o ${v} no pertenece al grafo")
+        }  
+    
+       if (this.hayCicloNegativo()){
+            throw RuntimeException("El grafo tiene un ciclo negativo")
+        }
+        
+        var camino: MutableList<Arco> = mutableListOf()
+        var caminoEnDijkstra = objetosDijs[u].obtenerCaminoDeCostoMinimo(v)
+        
+        for (arco in caminoEnDijkstra){
+            camino.add(Arco(arco.fuente(), 
+            arco.sumidero(), 
+            d[arco.fuente()][arco.sumidero()]))
+        }
 
-        // Precondicion : u y v deben pertenecer al grafo
-        // Postcondicion : se retorna el CCM entre u y v de haberlo, caso contrario se retorna un iterable vacio
-        return listaDijkstra[u].obtenerCaminoDeCostoMinimo(v)
-        // Tiempo de ejecucion : O(V) donde V es en numero de Vertices de G
+        return camino
     }
-
 }

@@ -5,7 +5,7 @@ package ve.usb.grafoLib
 class ApareamientoVertexScan(val g:GrafoNoDirigido){
 
     var v2 : MutableList<Int> = mutableListOf()
-    val e2 : MutableList<Arista> : mutableListOf()
+    var e2 : MutableList<Arista> = mutableListOf()
     val m : MutableList<Arista> = mutableListOf()
 
     init{
@@ -27,10 +27,11 @@ class ApareamientoVertexScan(val g:GrafoNoDirigido){
             //Escoger vertice aleatorio
             //var i : Int = (0..g.obtenerNumeroDeVertices()-1).random()
             var i : Int = v2.random()
-            
+            lateinit var aristaMin: Arista
+
             for (arista in e2){
-                if (arista.cualquieraDeLosVertices == i){
-                    var aristaMin : Arista = arista
+                if (arista.cualquieraDeLosVertices() == i){
+                    aristaMin = arista
                 }
             }
 

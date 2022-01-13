@@ -26,6 +26,10 @@ all:	\
 	$(PKG_GRAPHLIB)/FloydWarshall.class\
 	$(PKG_GRAPHLIB)/Johnson.class\
 	$(PKG_GRAPHLIB)/DijkstraGrafoNoDirigido.class\
+	$(PKG_GRAPHLIB)/CicloEuleriano.class\
+	$(PKG_GRAPHLIB)/ApareamientoPerfectoAvido.class\
+	$(PKG_GRAPHLIB)/ApareamientoVertexScan.class\
+	HeuristicaRPP.class\
 	Main.class\
 
 $(PKG_GRAPHLIB)/Color.class: $(PKG_GRAPHLIB)/Color.kt
@@ -97,12 +101,24 @@ $(PKG_GRAPHLIB)/FloydWarshall.class: $(PKG_GRAPHLIB)/FloydWarshall.kt
 $(PKG_GRAPHLIB)/Johnson.class: $(PKG_GRAPHLIB)/Johnson.kt
 	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/Johnson.kt
 
+$(PKG_GRAPHLIB)/CicloEuleriano.class: $(PKG_GRAPHLIB)/CicloEuleriano.kt
+	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/Utilidades.kt $(PKG_GRAPHLIB)/CFC.kt $(PKG_GRAPHLIB)/CicloEuleriano.kt
+
 $(PKG_GRAPHLIB)/DijkstraGrafoNoDirigido.class: $(PKG_GRAPHLIB)/DijkstraGrafoNoDirigido.kt
 	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/DijkstraGrafoNoDirigido.kt
 
+$(PKG_GRAPHLIB)/ApareamientoPerfectoAvido.class: $(PKG_GRAPHLIB)/ApareamientoPerfectoAvido.kt
+	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/ApareamientoPerfectoAvido.kt
+
+$(PKG_GRAPHLIB)/ApareamientoVertexScan.class: $(PKG_GRAPHLIB)/ApareamientoVertexScan.kt
+	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/ApareamientoVertexScan.kt
 
 Main.class: Main.kt 
 	$(KC) $(KFLAG) .:$(PKG_GRAPHLIB) Main.kt
+
+HeuristicaRPP.class: HeuristicaRPP.kt 
+	$(KC) $(KFLAG) .:$(PKG_GRAPHLIB) HeuristicaRPP.kt
+
 
 clean:
 	rm -rf *.class META-INF $(PKG_GRAPHLIB)/*.class $(PKG_GRAPHLIB)/META-INF
