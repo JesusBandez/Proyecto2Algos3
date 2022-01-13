@@ -1,173 +1,141 @@
 package ve.usb.grafoLib
+import java.util.Arrays
 
-public class FloydWarshall(val W : Array<Array<Double>>) {
-/*
- Implementación del algoritmo de Floyd-Warshall para encontrar los
- caminos de costo mínimo todos los pares de vértices de un grafo.
- El algoritmo se ejecuta sobre la matriz de pesos que se pasa como parametros 
- */
+// Implementacion del algoritmo de Floyd-Warshall para encontrar los CCM entre todos los vertices de un grafo
+// Se recibe de entrada la matriz nxn (cuadrada) de costos asociados al digrafo del que se quieren obtener los CCM, 
+// dicho grafo no debe tener ciclos negativos
+// Precondicion : La matriz w debe ser cuadrada y no deben haber ciclos negativos
+// Postcondicion : los costos en la matriz de distancias corresponde al CCM entre cada par de vertices del grafo
+public class FloydWarshall(val w : Array<Array<Double>>) {
 
-    // Matriz que lleva las distancias de los caminos mas cortos de los vertices
-    var matrizDistancia: Array<Array<Double>>
+    // Variables a ser utilizadas posteriormente para almacenar las matrices de predecesores y distancias
+    var n = w.size
+    var distancias : Array<Array<Double>>
+    var predecesores : Array<Array<Int>>
 
-    // Matriz que lleva los predecesores de los vertices
-    var matrizPredecesores: Array<Array<Int?>>
+    init {
 
-    init{
-        // Comprobar que la matriz es cuadrada
-        var n = W.size
-        var m = W[0].size
+        // Se verifica que la matriz w sea cuadrada viendo el tamaño de cada una de sus filas
+        for (i in w){
 
-        if (n != m){
-            throw RuntimeException("La matriz de pesos no es cuadrada")
+            if (i.size != n){
+
+                throw RuntimeException("La matriz de costos no es cuadrada")
+            }
         }
 
+        // Se crea un arreglo con todos los elementos iguales a -1, que representa el NIL de la implementacion vista en clase
+        predecesores = Array(n){Array(n) {-1} }
 
-        // Se crea una copia de la matriz de pesos
-        var matrizD0: Array<Array<Double>> = W.copyOf()
+        // Se le asigna a cada lado su predecesor dentro de la matriz de predecesores
+        // Se debe poder alcanzar un vertice desde el otro, caso contrario se mantiene el valor de -1 en la matriz
+        // Tiempo de ejecucion : O(V^2)
+        for (i in 0..n-1){
 
-        // Se genera la matriz de predecesores inicial
-        var predecesoresInicial: Array<Array<Int?>> = Array(n, {Array(n, {null})})
-        for (i in 0 until n){
-            for (j in 0 until n){
-                if (i!=j && matrizD0[i][j] < Double.POSITIVE_INFINITY){
-                    predecesoresInicial[i][j] = i
+            for (j in 0..n-1){
+
+                if ( i != j && w[i][j] < Double.MAX_VALUE){
+
+                    predecesores[i][j] = i
                 }
             }
         }
-        
-        // Lista de matrices que llevan la distancia de los vertices
-        var matricesD = mutableListOf(matrizD0)
-        // Lista de las matrices que llevan los predecesores de los vertices
-        var matricesDePredecesores = mutableListOf(predecesoresInicial)
 
-        // Ejecutar el algoritmo:
-        for (k in 0 until n){
-            
-            var matrizDAnterior = matricesD[k]
-            var matrizDNueva: Array<Array<Double>> = Array(n, {Array(n, {0.0})})
-            
-            var matrizDePredecesoresVieja = matricesDePredecesores[k]  
-            var matrizPredecesoresNueva: Array<Array<Int?>> = Array(n, {Array(n, {null})})
-                         
+        // Se le asigna la matriz de costos a la matriz de distancias en la iteracion 0
+        // Tiempo de ejecucion : O(V^2)
+        distancias = w
 
-            for (i in 0 until n){           
-                for (j in 0 until n){
-                    if (i == j){
-                        continue
-                    }                 
-                    if (matrizDAnterior[i][j] <=  matrizDAnterior[i][k] + matrizDAnterior[k][j]){
-                        matrizDNueva[i][j] = matrizDAnterior[i][j]
-                        matrizPredecesoresNueva[i][j] = matrizDePredecesoresVieja[i][j]
+        for (k in 0..n-1){
 
-                    } else {
-                        matrizDNueva[i][j] = matrizDAnterior[i][k] + matrizDAnterior[k][j]
-                        matrizPredecesoresNueva[i][j] = matrizDePredecesoresVieja[k][j]
+            for (i in 0..n-1){
+
+                for (j in 0..n-1){
+
+                    // Se actualiza la matriz de predecesores
+                    if (distancias[i][j] <= distancias[i][k] + distancias[k][j]){
+
+                        predecesores[i][j] = predecesores[i][j]
+
+                    }else if (distancias[i][j] > distancias[i][k] + distancias[k][j]){
+
+                        predecesores[i][j] = predecesores[k][j]
                     }
+
+                    // Se actualiza la matriz de distancias
+                    distancias[i][j] = minOf( distancias[i][j] , distancias[i][k] + distancias[k][j]) 
                 }
             }
-
-            // Agregar la matriz creada a la lista de matrices. Igualmente para 
-            // la matriz de predecesores
-            matricesD.add(matrizDNueva)            
-            matricesDePredecesores.add(matrizPredecesoresNueva)
-            
         }
-
-        // Conseguir la matriz de distancias y la matriz de predecesores final
-        matrizDistancia = matricesD.last()
-        matrizPredecesores = matricesDePredecesores.last()       
+        // Tiempo de ejecucion del algoritmo : O(V^3) por los tres ciclos donde se actualizan las matrices
     }
-
- 
-    fun obtenerMatrizDistancia() : Array<Array<Double>> {
-        /* Retorna la matriz con las distancias de los caminos de costo mínimo
-        entre todos los pares de vértices. 
-        Precond: True
-        Postcond: retorna la matriz de distancias
-        tiempoDeEjecucion: O(1)
-        */
-        return matrizDistancia
-    } 
-
-
-    fun obtenerMatrizPredecesores() : Array<Array<Int?>> { 
-        /*  Retorna la matriz con los predecesores de todos los vértices en los caminos de costo mínimo.       
-        Precond: True
-        Postcond: retorna la matriz de predecesores
-        tiempoDeEjecucion: O(1)*/
-        return matrizPredecesores
-    } 
     
 
-    fun costo(u: Int, v: Int) : Double {
-        /* Retorna la distancia del camino de costo mínimo desde el vértice u hasta el vértice v.
-            Si alguno de los dos vértices  no existe, arroja una RuntimeException.
-        Precond: u y v deben ser vertices del grafo
-        Postcond: retorna la distancia del camino mas corto entre u y v
-        tiempoDeEjecucion: O(1)*/
-        if (!(0 <= u && u < W.size) || !(0 <= v && v < W.size) ) {
-            throw RuntimeException("${u} o ${v} no pertenece al grafo")
-        } 
 
-        return matrizDistancia[u][v]
+    // Retorna la matriz con las distancias de los caminos de costo mínimo
+    // entre todos los pares de vértices.
+    fun obtenerMatrizDistancia() : Array<Array<Double>> { 
+
+        // Precondicion : true
+        // Postcondicion : la matriz de distancias es una matriz cuadrada cuyos elementos representan los costos de los CCM
+        // entre cada par de vertices del grafo
+        return distancias
+        // Tiempo de ejecucion : O(1) ya que solo se retorna una variable
+    } 
+
+    // Retorna la matriz con los predecesores de todos los vértices en los caminos de costo mínimo
+    // entre todos los pares de vértices.
+    fun obtenerMatrizPredecesores() : Array<Array<Int>> { 
+        // Precondicion : true
+        // Postcondicion : la matriz de predecesores es una matriz cuadrada cuyos elementos representan los predecesores de cada vertice
+        return predecesores
+        // Tiempo de ejecucion : O(1) ya que solo se retorna una variable
+    } 
+    
+    // Retorna la distancia del camino de costo mínimo desde el vértice u hasta el vértice v,
+    //  dicho valor se encuentra en el elemento u,v de la matriz
+    // Si no hay un camino entre u y v se retorna infinito
+    
+    fun costo(u: Int, v: Int) : Double { 
+        // Precondicion : u y v pertenecen al grafo
+        // Postcondicion : el costo representa el costo del CCM entre u y v
+
+        if( 0>v || v>n || 0>u || u>n){
+            throw RuntimeException ("Alguno de los vertices no pertenece al grafo")
+        }
+        return distancias[u][v]
+        // Tiempo de ejecucion : O(1) ya que solo se retorna un valor
     }
 
-
+    // Retorna true si hay un camino desde u hasta el vértice v, caso contrario retorna false
+    // Para saber si hay un camino se observa si el elemento u,v de la matriz de predecesores es distinto a -1
     fun existeUnCamino(u: Int, v: Int) : Boolean { 
-        /* Retorna true si hay un camino desde u hasta el vértice v.
-            Si alguno de los dos vértices  no existe, se arroja un RuntimeException.
-        Precond: u y v deben ser vertices del grafo
-        Postcond: retorna un booleano que indica si existe un camino de u a v
-        tiempoDeEjecucion: O(1)*/ 
-
-        if (!(0 <= u && u < W.size) || !(0 <= v && v < W.size) ) {
-            throw RuntimeException("${u} o ${v} no pertenece al grafo")
-        }  
-        return matrizDistancia[u][v] != Double.POSITIVE_INFINITY
+        // Precondicion : u y v pertenecen al grafo
+        // Postcondicion : Retorna true si hay un camino desde u hasta el vértice v, caso contrario retorna false
+        if( 0>v || v>n || 0>u || u>n){
+            throw RuntimeException ("Alguno de los vertices no pertenece al grafo")
+        }
+        return predecesores[u][v] != -1
+        // Tiempo de ejecucion : O(1) ya que solo se retorna un valor
     }
 
-
+    // Retorna los arcos del camino de costo mínimo desde u hasta v.
+    // Para obtener el camino se van recorriendo los predecesores de v en la matriz de predecesores hasta llegar a u
     fun obtenerCaminoDeCostoMinimo(u: Int, v: Int) : Iterable<Arco> {
-     /*Retorna los arcos del camino de costo mínimo desde u hasta v.
-     Si alguno de los dos vértices  no existe, se arroja un RuntimeException.
-        Precond: u y v deben ser vertices del grafo
-        Postcond: Retorna una lista con los arcos que conforman el camino de costo minimo
-        tiempoDeEjecucion: O(m), siendo m la cantidad de arcos que tenga el camino*/
+        // Precondicion : u y v pertenecen al grafo
+        // Postcondicion : el camino retornado es el CCM entre u y v
 
-        if (!(0 <= u && u < W.size) || !(0 <= v && v < W.size) ) {
-            throw RuntimeException("${u} o ${v} no pertenece al grafo")
+        if( 0>v || v>n || 0>u || u>n){
+            throw RuntimeException ("Alguno de los vertices no pertenece al grafo")
         }
+        var camino : MutableList<Arco> = mutableListOf()
+        var actual = v
 
-        // Se crea una lista vacia
-        var camino: MutableList<Arco> = mutableListOf()
+        while (actual != u){
 
-        // Si existe un camino, se llena la lista camino con los arcos.
-        // Si no, se retorna la lista vacia
-        if (existeUnCamino(u, v)){
-            caminoDeCostoMinimoRecursivo(u, v, camino)
-        } 
-
-        return camino
-     }
-
-    fun caminoDeCostoMinimoRecursivo(u: Int, v: Int?, arcos: MutableList<Arco>){
-        /* Funcion que navega de manera recursiva por los predecesores de los vertices para ir construyendo
-        el camino de costo minimo
-        precondicion: u y v pertenecen al grafo, arcos es una lista de arcos
-        postcondicion: True
-        tiempoDeEjecucion: O(m), siendo m la cantidad de arcos que tenga el camino
-        */
-        if (u == v){
-            
-        } else if(matrizPredecesores[u][v!!] == null) {
-            arcos.clear()
-
-        } else {
-            caminoDeCostoMinimoRecursivo(u, matrizPredecesores[u][v], arcos)
-            
-            arcos.add(Arco(matrizPredecesores[u][v]!!, v, W[matrizPredecesores[u][v]!!][v]))
+            camino.add(Arco(predecesores[u][actual],actual))
+            actual = predecesores[u][actual]
         }
-        
+        return camino.reversed()
+        // Tiempo de ejecucion : O(V^2) ya que en el peor caso se debera recorrer toda la matriz para hallar el CCM
     }
 }

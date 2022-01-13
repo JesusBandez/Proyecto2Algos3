@@ -1,122 +1,81 @@
 package ve.usb.grafoLib
 
-/*
- Clase para conseguir las comopoenntes conexas de un grafo con la estructura de datos
- conjuntos disjuntos. Al instanciar la clase se consiguen las componentes
-*/
+
+// Determina las componentes conexas de un grafo no dirigido usando CD
 public class ComponentesConexasCD(val g: GrafoNoDirigido) {
 
-    var conjDisjuntos = ConjuntosDisjuntos(g.obtenerNumeroDeVertices())
-    var componentesConexas: MutableList<ComponenteConexa> = MutableList(
-        g.obtenerNumeroDeVertices(), {ComponenteConexa(it)})
+    // Se crea un objeto de clase ConjuntosDisjuntos que usaremos para hallar las componentes conexas
+    var conjuntosDisjuntos = ConjuntosDisjuntos(g.lados.size)
+    
+    var aristas : Iterable<Arista> = g.aristas()
+
+    var conj : MutableList<MutableSet<Int>> = mutableListOf()
+
+    // Al crear un objeto de esta clase, se consiguen las componentes conexas
+    init{
+        // Se consiguen las componentes conexas con la funcion union
+        for (arista in aristas){
+            conjuntosDisjuntos.union(arista.u,arista.v)
+        }
+
+        // Luego se añaden los vertices de cada componente a un arreglo guiandose
+        // por las propiedades de los nodos del arbol
+        for (nodos in conjuntosDisjuntos.nodos){
+            conj.add(mutableSetOf())
+        }
+        for (nodos in conjuntosDisjuntos.nodos){
+            conj[nodos.p].add(nodos.valor)
+        }
+        conj = conj.filter{s -> !s.isEmpty()}.toMutableList()
+        conjuntosDisjuntos.conjuntos = conj
+    }
     
 
-    init{
-        /* Al instanciar la clase se consiguen las componentes conexas        
-        */
+    
 
-    // Se consiguen los vertices de cada arista perteneciente al grafo
-    for (arista in g.aristas()){
-        var v = arista.cualquieraDeLosVertices()
-        var u = arista.elOtroVertice(v)
-        var padreV = conjDisjuntos.encontrarConjunto(v)
-        var padreU = conjDisjuntos.encontrarConjunto(u)
-
-        // Si el padre de v y u son distintos, entonces deben unirse
-        if (padreV != padreU){
-
-            conjDisjuntos.union(v, u)
-
-            // Se consigue cual es el nuevo padre del conjunto que resulta de la union
-            var nuevoPadre = conjDisjuntos.encontrarConjunto(v)
-
-            // Si el nuevo padre es el padre de v, entonces se suma la cantidad de vertices pertenecientes de este padre con la 
-            // de el antihuo padre de U. Ademas, La componenteConexa[padreU] ya no es una componente conexa final
-            if (nuevoPadre == padreV){
-
-                componentesConexas[padreV].numeroDeVerticesPertenecientes += componentesConexas[padreU].numeroDeVerticesPertenecientes
-                componentesConexas[padreU].componenteFinal = false
-                
-            // En caso contrario, se hace lo mismo pero si intercambian de posicion los padres
-            } else if (nuevoPadre == padreU){
-                componentesConexas[padreU].numeroDeVerticesPertenecientes += componentesConexas[padreV].numeroDeVerticesPertenecientes
-                componentesConexas[padreV].componenteFinal = false
-            }
-        }
-    }
-    // Finalmente, se eliminan las componentes que no son finales.
-    componentesConexas.removeIf{ !it.componenteFinal }
-    }
-
-  
+    // Retorna true si los dos vertices son parte de la misma componente, caso contrario retorna false
     fun estanMismaComponente(v: Int, u: Int) : Boolean {
-    /*
-     Retorna true si los dos vertices están en la misma componente conexa y
-     falso en caso contrario. Si el algunos de los dos vértices de
-     entrada, no pertenece al grafo, entonces se lanza un RuntineException
-     */
-        if ( ! ((0 <= v && v < g.obtenerNumeroDeVertices()) || 
-            (0 < u && u < g.obtenerNumeroDeVertices()))){
-                throw RuntimeException("Uno de los vertices no pertenece al grafo")
-            }
-
-        if (conjDisjuntos.encontrarConjunto(u) == 
-                conjDisjuntos.encontrarConjunto(v)){
-            
-            return true
-        } else {
-            return false
-        }	
+        if (!g.lados.contains(v) || !g.lados.contains(u)){
+            throw RuntimeException("Alguno de los vertices no pertenece a este grafo")
+        }
+        return conjuntosDisjuntos.encontrarConjunto(v) == conjuntosDisjuntos.encontrarConjunto(u)
+        // Tiempo de ejecucion : O(1), solo se retorna un valor
     }
 
-    // Retorna el numero de componentes conexas del grafo
+    // Indica el número de componentes conexas
     fun numeroDeComponentesConexas() : Int {
-        return conjDisjuntos.numConjuntosDisjuntos()
+        
+        // Retorna el numero de componentes conexas buscando cada elemento distinto en la lista de conjuntos
+        return conjuntosDisjuntos.conjuntos.size
+        // Tiempo de ejecucion : O(1), solo se retorna un valor
     }
 
- 
+    
+    // Retorna el numero de la componente conexa donde está contenido v
     fun obtenerComponente(v: Int) : Int {
-    /*
-     Retorna el identificador de la componente conexa donde está contenido 
-     el vértice v. Si ve no pertenece al grafo, se arroja una exception     
-     */
-        if ( !(0 <= v && v < g.obtenerNumeroDeVertices())){
-                throw RuntimeException("El vertice ${v} no pertenece al grafo")
-            }
 
-        var padreDeV: Int = conjDisjuntos.encontrarConjunto(v)
+        if (!g.lados.contains(v)){
+            throw RuntimeException("El vertice no pertenece a este grafo")
+        }
 
-        for ((index, componente) in componentesConexas.withIndex()){
-            if(componente.identificadorDelPadre == padreDeV){
-                return index
+        val listaConjuntos = conjuntosDisjuntos.conjuntos
+
+        var cont = -1
+        for ((indice,conj) in listaConjuntos.withIndex()){
+            if (conj.contains(v)){
+                cont = indice
             }
         }
-        return -1
+        return cont
+        // Tiempo de ejecucion : O(n), donde n es el numero de componentes
     }
 
-    //Retorna el número de vértices que conforman una componente conexa 
+    // Retorna el número de vértices de una componente conexa dada.
     fun numVerticesDeLaComponente(compID: Int) : Int {
-        /* 
-        Precondicion: compID es el identificador de una componente
-        Postcoindicion: se retorna el numero de vertices de la componente
-        Tiempo de Ejecucion: O(1) 
-        */
-        return componentesConexas[compID].numeroDeVerticesPertenecientes
+        if(compID > numeroDeComponentesConexas()){
+            throw RuntimeException("el identificador no pertenece a ninguna componente conexa")
+        }
+        return conjuntosDisjuntos.conjuntos[compID].size
+        // Tiempo de ejecucion : O(1), solo se retorna un valor
     }
-
-
-    /* Clase interna para representar la cantidad de componentes conexas en el grafo.
-    numeroDeVerticesPertenecientes es la cantidad inicial de vertices en la componente. A medida que la componente
-      se va uniendo con otras, se van sumando sus numerosDeVerticesPertenecientes, de esta forma la componente conexa final
-      tiene el numero de vertices total en ella
-
-    componenteFinal: Es un flag para determinar si el conjunto al que esta componente hace referencia se le ha cambiado el padre
-      Todo nodo al que jamas se le haya cambiado de padre tiene una componente conexa en la que se le guardan su numeroDeVerticesPertenecientes
-      Las componentes conexas que no son finales son filtradas al final del algoritmo
-     */
-    inner class ComponenteConexa(val identificadorDelPadre: Int){        
-        var numeroDeVerticesPertenecientes: Int = 1
-        var componenteFinal: Boolean = true
-    }
-
 }
