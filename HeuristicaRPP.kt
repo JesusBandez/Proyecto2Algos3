@@ -97,7 +97,7 @@ fun main(args: Array<String>) {
             var arista1 = Arista(u,v,cv1)
             arista1.tipo = "NReq"
             var arista2 = Arista(v,u,cv2)
-            arista1.tipo = "NReq"
+            arista2.tipo = "NReq"
             gPrim.agregarArista(arista1)
             gPrim.agregarArista(arista2)
             // De alguna forma hay que diferenciarlas en el grafo
@@ -107,7 +107,7 @@ fun main(args: Array<String>) {
             var arista1 = Arista(u,v,cv1)
             arista1.tipo = "Req"
             var arista2 = Arista(v,u,cv2)
-            arista1.tipo = "Req"
+            arista2.tipo = "Req"
             gPrim.agregarArista(arista1)
             gPrim.agregarArista(arista2)
         }        
