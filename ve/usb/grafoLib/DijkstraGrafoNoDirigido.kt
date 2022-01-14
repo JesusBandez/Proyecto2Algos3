@@ -39,7 +39,7 @@ public class DijkstraGrafoNoDirigido(val g: GrafoNoDirigido, val s: Int){
 
         // Comprobar si hay un arco negativo
         for (arco in gDirigidoAsociado.arcos()){
-            if (arco.peso()<0){
+            if (arco.obtenerPeso()<0){
                 RuntimeException("El grafo tiene un arco de peso negativo")
             }
         }
@@ -63,7 +63,7 @@ public class DijkstraGrafoNoDirigido(val g: GrafoNoDirigido, val s: Int){
             verticeYaExplorados.add(u)
 
             for (arco in gDirigidoAsociado.adyacentes(u)){
-                relajacion(u, arco.sumidero(), arco.peso())
+                relajacion(u, arco.sumidero(), arco.obtenerPeso())
                 
             }
         }
