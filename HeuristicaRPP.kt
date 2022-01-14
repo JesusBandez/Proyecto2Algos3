@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
     var costo : Double = 0.0
     
 
+
     var archivo = File(instancia).bufferedReader().readLines()
 
     var linea0 = archivo[0].split(" ").toList()
@@ -57,6 +58,50 @@ fun main(args: Array<String>) {
 
     var grafoG0 : GrafoNoDirigido
 
+    val grafoCompleto : GrafoNoDirigido = GrafoNoDirigido(vertices)
+
+    for (i in 6..archivo.size-1){
+
+        if(i == aristasReq + 6){
+            continue
+        }
+        
+        // Se lee la linea i del archivo
+        // Se filtra para eliminar todos los espacios innecesarios
+        linea = archivo[i].split(" ").toList()
+        linea = linea.filter { it != "" && it != " "}
+        
+        var u : Int
+        var v : Int
+        var cv1 : Double
+        var cv2 : Double 
+        
+        // Para cuando el valor de algun vertice es 1000, el split no funciona de la misma manera
+        // Porque en este caso no hay espacio entre los valores
+        if (linea.size <= 5){
+            
+            var lineaM = linea[1].split(",")
+
+            u = lineaM[0].toInt() - 1
+            v = lineaM[1].dropLast(1).toInt() - 1
+            cv1 = linea[3].toDouble()
+            cv2 = linea[4].toDouble()    
+
+        }else{
+
+            u = linea[1].dropLast(1).toInt() - 1
+            v = linea[2].dropLast(1).toInt() - 1
+            cv1 = linea[4].toDouble()
+            cv2 = linea[5].toDouble()
+        }
+        
+        //println("Linea ${i + 1}")
+        //println("u : $u , v : $v , cv1 : $cv1 , cv2 : $cv2 ")
+
+
+        var arista1 = Arista(u,v,cv1)                    
+        grafoCompleto.agregarArista(arista1)
+    }
     
 
     // Se recorren las lineas del archivo a partir de la 6ta linea hasta el valor de aristas requeridas
@@ -298,7 +343,7 @@ fun main(args: Array<String>) {
         // Luego de obtener Gt se calcula el arbol cobertor del mismo
         // Usaremos la clase ArbolMinimoCobertorPrim para ello
 
-        //var arbolMin = ArbolMinimoCobertorKruskal(grafoG0)
+        // var arbolMin = ArbolMinimoCobertorKruskal(grafoG0)
 
     }
 
