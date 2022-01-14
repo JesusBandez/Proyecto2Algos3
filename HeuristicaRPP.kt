@@ -1,5 +1,6 @@
 
 import java.io.File
+import java.time.Instant
 
 fun main(args: Array<String>) {
     
@@ -31,10 +32,10 @@ fun main(args: Array<String>) {
     vertices = linea2[2].toInt()
 
     val linea3 = archivo[3].split(" ").toTypedArray()
-    aristasReq = linea3[2]
+    aristasReq = linea3[2].toInt()
 
     val linea4 = archivo[4].split(" ").toTypedArray()
-    aristasNoReq = linea4[2]
+    aristasNoReq = linea4[2].toInt()
 
     val gPrim : GrafoNoDirigido = GrafoNoDirigido(vertices)    
 
@@ -55,20 +56,21 @@ fun main(args: Array<String>) {
         //u = u.replaceAll( "[^\\d]", "" )
 
         // u en el indice 3
-        var u = linea[3]
-        u = expresionRegular.replace(u, "").toInt() - 1
+        var l3 : String = linea[3]
+        var u = expresionRegular.replace(l3, "").toInt() - 1
         
         // v en el indice 6
-        var v = linea[6]
-        v = expresionRegular.replace(v, "").toInt() - 1
+        var l6 = linea[6]
+        var v = expresionRegular.replace(l6, "").toInt() - 1
 
         // cv1 en el indice 15
-        var cv1 = linea[15]
-        cv1 = expresionRegular.replace(cv1, "").toInt()
+        var l15 = linea[15]
+        var cv1 = expresionRegular.replace(l15, "").toInt()
 
         // cv2 en el indice 22
-        var cv2 = linea[22]
-        cv2 = expresionRegular.replace(cv2, "").toInt()
+        var l22 = linea[22]
+        var cv2 = expresionRegular.replace(l22, "").toInt()
+
 
         gPrim.agregarArista(Arista(u,v,costo=cv1))
         gPrim.agregarArista(Arista(v,u,costo=cv2))
@@ -85,7 +87,7 @@ fun main(args: Array<String>) {
 
         // Se verifica si el grafo es par
         var par : Boolean = true
-        for ( vertice in 0..g.obtenerNumeroDeVertices() - 1){
+        for ( vertice in 0..gPrim.obtenerNumeroDeVertices() - 1){
 
             if (gPrim.grado(vertice) % 2 != 0){
 
