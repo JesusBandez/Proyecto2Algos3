@@ -19,7 +19,7 @@ class ApareamientoVertexScan(val g:GrafoNoDirigido){
 
         // Se ordenan las aristas por costo, esto significa que si tengo el vertice i y quiero encontrar el lado (i,j)
         // con menor costo, este lado sera el primero que contenga a i como fuente que se encuentre
-        e2.sortBy{it.costo}
+        e2.sortBy{it.peso}
 
         while (v2.size!=0){
             

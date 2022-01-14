@@ -16,7 +16,7 @@ class ApareamientoPerfectoAvido(val g:GrafoNoDirigido){
             v2.add(vertice)
         }
 
-        val compareByCost: Comparator<Arista> = compareBy { it.costo }
+        val compareByCost: Comparator<Arista> = compareBy { it.peso }
 
         l = PriorityQueue<Arista>(compareByCost)
 

@@ -3,8 +3,7 @@ package ve.usb.grafoLib
 // Clase arista que hereda las propiedades de la clase abstracta lado
 public class Arista(val v : Int,
 		    val u : Int,
-		    val peso : Double = 0.0,
-            val costo : Int = 0) : Comparable<Arista>, Lado(v, u) {
+		    val peso : Double = 0.0) : Comparable<Arista>, Lado(v, u) {
 
     // Retorna el peso del arco
     fun peso() : Double {
@@ -13,13 +12,6 @@ public class Arista(val v : Int,
 
         // Tiempo de ejecucion : O(1) se retorma una variable solamente
 	    return this.peso
-    }
-
-    fun costo() : Int {
-        
-
-        // Tiempo de ejecucion : O(1) se retorma una variable solamente
-	    return this.costo
     }
 
     // Representación en string de la arista
