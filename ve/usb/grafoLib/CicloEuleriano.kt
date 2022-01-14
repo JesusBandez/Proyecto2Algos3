@@ -86,7 +86,7 @@ public class CicloEuleriano(val g: GrafoDirigido) {
                 // Iterar por los arcos donde v sea fuente
                 while (i < adyacentesV.size){
                     var arco = adyacentesV[i]
-
+                    
                     // Encontrar lado sin explorar
                     if (!arcoYaExplorado[arco.fuente()][arco.sumidero()]){
 

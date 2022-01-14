@@ -11,12 +11,12 @@ fun main(args: Array<String>) {
 
     val algoritmo : String = args[0]
     val instancia : String = args[1]
-    var ciclo : MutableList<Arista> = mutableListOf()
+    var ciclo : MutableList<Arco> = mutableListOf()
     var aristasReq : Int
     var aristasNoReq : Int
     var vertices : Int
     var nombre : String
-    var numComponentes : Int
+    var componentes : Int
     var costo : Double = 0.0
     
 
@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
 
     var linea1 = archivo[1].split(" ").toList()
     linea1 = linea1.filter { it != "" && it != " "}
-    numComponentes = linea1[2].toInt()
+    componentes = linea1[2].toInt() 
 
     var linea2 = archivo[2].split(" ").toList()
     linea2 = linea2.filter { it != "" && it != " "}
@@ -42,29 +42,33 @@ fun main(args: Array<String>) {
     linea4 = linea4.filter { it != "" && it != " "}
     aristasNoReq = linea4[2].toInt()
 
-    /* println(nombre)
-    println(numComponentes)    
+    println(nombre)
+    println(componentes)
+    /*  
     println(vertices)    
     println(aristasReq)  
     println(aristasNoReq) */
 
+    
     var linea : List<String>
 
-    val gPrim : GrafoNoDirigido = GrafoNoDirigido(vertices)    
+    // Grafo que contiene solo los lados requeridos
+    val gRequerido : GrafoNoDirigido = GrafoNoDirigido(vertices)
 
-    // Crear grafo Gr . Los lados requeridos se encuentran en el txt de la instancia
+    
 
     // Se recorren las lineas del archivo a partir de la 6ta linea hasta el valor de aristas requeridas
     // Las aristas no requeridas no nos importan
     // Se les resta 1 a cada vertice para que comiencen en 0  y que no explote el algoritmo xdxdx
-    for (i in 6..archivo.size - 1){
-        
-        if (i == aristasReq + 6){
-            continue
-        }
+    for (i in 6..aristasReq + 6 - 1){
+    
         linea = archivo[i].split(" ").toList()
         linea = linea.filter { it != "" && it != " "}
+        //var lineaM = linea[1].split(",")
         
+        //println("Linea ${i + 1}")
+        //println(linea)
+
         var u : Int
         var v : Int
         var cv1 : Double
@@ -86,48 +90,79 @@ fun main(args: Array<String>) {
             cv1 = linea[4].toDouble()
             cv2 = linea[5].toDouble()
         }
+
+        //println("u : $u , v : $v , cv1 : ${cv1} , cv2 : ${cv2} ")  
+        // Por ahor asumamos que cv1 = cv2. Agregar un arista agrega los dos arcos
+        gRequerido.agregarArista(Arista(u,v,cv1))
+        if (cv1 != cv2 ){
+            print("error, pesos distintos")
+        }
         
-        //println("Linea ${i + 1}")
-        //println("u : $u , v : $v , cv1 : $cv1 , cv2 : $cv2 ")
-        
-        if (i > aristasReq + 6){
-
-            //Aristas no requeridas
-
-            var arista1 = Arista(u,v,cv1)
-            arista1.tipo = "NReq"
-            var arista2 = Arista(v,u,cv2)
-            arista2.tipo = "NReq"
-            gPrim.agregarArista(arista1)
-            gPrim.agregarArista(arista2)
-            // De alguna forma hay que diferenciarlas en el grafo
-        }else{
-
-            // Aristas requeridas
-            var arista1 = Arista(u,v,cv1)
-            arista1.tipo = "Req"
-            var arista2 = Arista(v,u,cv2)
-            arista2.tipo = "Req"
-            gPrim.agregarArista(arista1)
-            gPrim.agregarArista(arista2)
-        }        
     }
 
-    //println(vertices)
-    //println(gPrim.obtenerNumeroDeVertices())
+    // Se establece un "isomorfismo" entre gRequerido y gPrima
+    // Diccionarios usados para conservar la relacion entre un vertice en grafo gRequerido y
+    // un vertice en el grafo gPrima. En caso de que se quiera buscar el vertice i de gRequerido
+    // en gPrima, se usa vertice = deGRequeridoAGPrima.get(i). Si se quiere lo contrario, se usa
+    // vertice = deGprimaAGRequerido(i)
 
-    // Verificar que G' sea conexo (que todos sus vertices esten conectados por un camino)
+    var deGprimaAGRequerido: MutableMap<Int, Int> = mutableMapOf()
+    var deGRequeridoAGPrima: MutableMap<Int, Int> = mutableMapOf()
+    var contadorDeVerticesRequeridos: Int = 0
 
-    //val compConexas = ComponentesConexasDFS(gPrim)
-    //val numComp = componentesConexas.numeroDeComponentesConexas()
-    //println(numComp == 1)
+    // Ahora se consigue gPrim
+
     
-    if( numComponentes == 1 ){
+    for (vertice in 0 until vertices){
+        // Si el vertice tiene grado mayor a 0, entonces
+        // es incidente en un lado requerido
+        if (gRequerido.grado(vertice)>0){
+            // Se establece la relacion que tiene el vertice de gRequeridos
+            // con el que tendra gPrima
+            deGprimaAGRequerido.put(contadorDeVerticesRequeridos, vertice)
+            deGRequeridoAGPrima.put(vertice, contadorDeVerticesRequeridos)
+
+            contadorDeVerticesRequeridos++
+        }
+    }
+
+    // Crear gPrima con solo los vertices que son incidentes en un lado requerido
+    var gPrim = GrafoNoDirigido(contadorDeVerticesRequeridos)
+
+    // Conseguir los lados de gPrima usando las relaciones entre los vertices
+    for (arista in gRequerido.aristas()){
+        var unoDeLosVertices = arista.cualquieraDeLosVertices()
+
+        var vertice = deGRequeridoAGPrima.get(unoDeLosVertices)!!
+        var otroVertice = deGRequeridoAGPrima.get(arista.elOtroVertice(unoDeLosVertices))!!
+        
+        gPrim.agregarArista(Arista(vertice, otroVertice, arista.peso()))
+    }
+
+
+
+    // Verificar que G' sea conexo (que todos sus vertices esten conectados por un camino)    
+    // Conseguir el grafo dirigido asociado a gPrim
+    var gPrimDirigidoAsociado = GrafoDirigido(gPrim.obtenerNumeroDeVertices())
+
+    // Para cada vertice en el grafo no dirigido, se consiguen los arcos que salen de el
+    // y se agregan al grafo dirigo asociado
+    for (verticeInicial in 0 until gPrim.obtenerNumeroDeVertices()){
+        for (lado in gPrim.adyacentes(verticeInicial)){
+            gPrimDirigidoAsociado.agregarArco(Arco(verticeInicial, lado.elOtroVertice(verticeInicial), lado.peso()))
+        }
+    }
+ 
+    // Se ejecuta el algoritmo CFC sobre el grafo dirigido asociado  
+    
+    var esFuertementeConexo: Boolean = CFC(gPrimDirigidoAsociado).numeroDeCFC() == 1   
+    println(esFuertementeConexo)
+    if( esFuertementeConexo){
 
         // Se verifica si el grafo es par
         var par : Boolean = true
-        for ( vertice in 0..gPrim.obtenerNumeroDeVertices() - 1){
-
+        for ( vertice in 0 until gPrim.obtenerNumeroDeVertices()){
+            
             if (gPrim.grado(vertice) % 2 != 0){
 
                 par = false
@@ -137,50 +172,33 @@ fun main(args: Array<String>) {
 
         // Si es par se obtiene el ciclo euleriano
         if (par){
-            // Conseguir el grafo dirigido asociado a gPrim
-            var gPrimDirigidoAsociado = GrafoDirigido(gPrim.obtenerNumeroDeVertices())
-
-            // Para cada vertice en el grafo no dirigido, se consiguen los arcos que salen de el
-            // y se agregan al grafo dirigo asociado
             
-            for (verticeInicial in 0 until gPrim.obtenerNumeroDeVertices()){
-                for (lado in gPrim.adyacentes(verticeInicial)){
-                    gPrimDirigidoAsociado.agregarArco(Arco(verticeInicial, lado.elOtroVertice(verticeInicial), lado.peso()))
-                }
-            }
             
-            ciclo = CicloEuleriano(gPrimDirigidoAsociado).obtenerCicloEuleriano() as MutableList<Arista>
+            ciclo = CicloEuleriano(gPrimDirigidoAsociado).obtenerCicloEuleriano() as MutableList<Arco>
             
         }else{
-
+            println("no es par") 
             //linea 16 en adelante
         }
     }else{
-
         // Obtenemos las componentes conexas de G' para hacer Gt
+        
         val compConexas = ComponentesConexasDFS(gPrim)
-        val componentes = compConexas.componentesConexas
-        //println("numero de componentes : ${compConexas.numeroDeComponentesConexas()}")
-        //println(componentes)
-        val grafoCompleto : GrafoDirigido = GrafoDirigido(compConexas.numeroDeComponentesConexas())
-
-
 
     }
 
-    for (arista in ciclo){
-        costo += arista.peso()
+    for (arco in ciclo){
+        costo += arco.peso()
     }
 
     val fin = Instant.now().toEpochMilli()
 
     //println("\nInstancia : $nombre")
     //println("\nSolucion al RPP :")
-    println(ciclo.joinToString(" "))
-    //println("\nCosto de la solucion : $costo")
-    println(costo)
-    //println("\nTiempo que tomo encontrar la solucion : ${fin-inicio} segundos")
-    println("${fin-inicio} segs.")
+    //println(ciclo.joinToString(" "))
+    println("\nCosto de la solucion : $costo")
+
+    println("\nTiempo que tomo encontrar la solucion : ${(fin-inicio).toDouble()/1000} segundos")
 
     // Construir Grafo completo Gp    
 }
