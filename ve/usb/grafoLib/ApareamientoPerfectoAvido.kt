@@ -6,7 +6,7 @@ import java.util.PriorityQueue
 
 class ApareamientoPerfectoAvido(val g:GrafoNoDirigido){
 
-    var emp_perfecto : MutableList<Arista> = mutableListOf()
+    var m : MutableList<Arista> = mutableListOf()
     var v2 : MutableList<Int> = mutableListOf()
     val l: PriorityQueue<Arista>
 
@@ -35,13 +35,17 @@ class ApareamientoPerfectoAvido(val g:GrafoNoDirigido){
             if (v2.contains( i ) && v2.contains( j )){
 
                 //añadir el lado a M
-                emp_perfecto.add(arista)
+                m.add(arista)
 
                 // remover de V' i y j
                 v2.remove(i)
                 v2.remove(j)
             }
         }
-    } 
+    }
+
+    fun  obtenerApareamiento() : Iterable<Arista>{
+        return m
+    }
     // falta retornar M
 }

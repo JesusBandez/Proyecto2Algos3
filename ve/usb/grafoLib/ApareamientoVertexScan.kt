@@ -52,4 +52,8 @@ class ApareamientoVertexScan(val g:GrafoNoDirigido){
             }
         }
     }
+    
+    fun  obtenerApareamiento() : Iterable<Arista>{
+        return m
+    }
 }

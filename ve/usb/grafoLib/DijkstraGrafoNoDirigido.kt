@@ -95,7 +95,7 @@ public class DijkstraGrafoNoDirigido(val g: GrafoNoDirigido, val s: Int){
         return distanciaDe[v]  
     }
 
-    fun obtenerCaminoDeCostoMinimo(v: Int) : Iterable<Arco> {
+    fun obtenerCaminoDeCostoMinimo(v: Int) : Iterable<Arista> {
         /* Retorna un iterable con los arcos del camino de costo mínimo hasta v.
         En caso de que v no exista en el grafo, se arroja una exception 
         precond: v pertenece al grafo
@@ -109,7 +109,7 @@ public class DijkstraGrafoNoDirigido(val g: GrafoNoDirigido, val s: Int){
         }
 
         // Se inicializa una lista vacia.
-        var caminoDeCostoMinimo: MutableList<Arco> = mutableListOf()
+        var caminoDeCostoMinimo: MutableList<Arista> = mutableListOf()
 
         // Si no existe un camino hasta v, entonces se retorna el camino vacio
         if (!this.existeUnCamino(v)){
@@ -125,7 +125,7 @@ public class DijkstraGrafoNoDirigido(val g: GrafoNoDirigido, val s: Int){
             // Agregar al camimo de coste minimo el arco cuya fuente sea el predecesor del vertice actual
             // y cuyo sumidero sea el vertice actual
             caminoDeCostoMinimo.add(
-                Arco(predecesorDe[verticeActual]!!, verticeActual, 
+                Arista(predecesorDe[verticeActual]!!, verticeActual, 
                     pesosDeCaminos[predecesorDe[verticeActual]!!][verticeActual])
                 )
 
