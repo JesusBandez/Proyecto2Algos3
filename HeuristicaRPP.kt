@@ -12,36 +12,45 @@ fun main(args: Array<String>) {
     val algoritmo : String = args[0]
     val instancia : String = args[1]
     var ciclo : MutableList<Arista> = mutableListOf()
-    var aristasReq : Int = 0
-    var aristasNoReq : Int = 0
-    var vertices : Int = 0
-    var nombre : String =  ""
-    var componentes : Int = 0
-    var costo : Int = 0
+    var aristasReq : Int
+    var aristasNoReq : Int
+    var vertices : Int
+    var nombre : String
+    var componentes : Int
+    var costo : Double = 0.0
     
 
     var archivo = File(instancia).bufferedReader().readLines()
 
-    val linea0 = archivo[0].split(" ").toTypedArray()
+    var linea0 = archivo[0].split(" ").toList()
+    linea0 = linea0.filter { it != "" && it != " "}
     nombre = linea0[2]
 
-    val linea1 = archivo[1].split(" ").toTypedArray()
+    var linea1 = archivo[1].split(" ").toList()
+    linea1 = linea1.filter { it != "" && it != " "}
     componentes = linea1[2].toInt()
 
-    val linea2 = archivo[2].split(" ").toTypedArray()
+    var linea2 = archivo[2].split(" ").toList()
+    linea2 = linea2.filter { it != "" && it != " "}
     vertices = linea2[2].toInt()
 
-    val linea3 = archivo[3].split(" ").toTypedArray()
+    var linea3 = archivo[3].split(" ").toList()
+    linea3 = linea3.filter { it != "" && it != " "}
     aristasReq = linea3[2].toInt()
 
-    val linea4 = archivo[4].split(" ").toTypedArray()
+    var linea4 = archivo[4].split(" ").toList()
+    linea4 = linea4.filter { it != "" && it != " "}
     aristasNoReq = linea4[2].toInt()
 
+    /* println(nombre)
+    println(componentes)    
+    println(vertices)    
+    println(aristasReq)  
+    println(aristasNoReq) */
+
+    var linea : List<String>
+
     val gPrim : GrafoNoDirigido = GrafoNoDirigido(vertices)    
-
-    var linea : Array<String>
-
-    val expresionRegular = Regex("[^0-9 ]")
 
     // Crear grafo Gr . Los lados requeridos se encuentran en el txt de la instancia
 
@@ -50,33 +59,40 @@ fun main(args: Array<String>) {
     // Se les resta 1 a cada vertice para que comiencen en 0  y que no explote el algoritmo xdxdx
     for (i in 6..aristasReq + 6 - 1){
     
-        linea = archivo[i].split(" ").toTypedArray()
-
-        //var u = linea[3].dropLast(1).toInt() - 1
-        //u = u.replaceAll( "[^\\d]", "" )
-
-        // u en el indice 3
-        var l3 : String = linea[3]
-        var u = expresionRegular.replace(l3, "").toInt() - 1
+        linea = archivo[i].split(" ").toList()
+        linea = linea.filter { it != "" && it != " "}
+        //var lineaM = linea[1].split(",")
         
-        // v en el indice 6
-        var l6 = linea[6]
-        var v = expresionRegular.replace(l6, "").toInt() - 1
+        println("Linea ${i + 1}")
+        println(linea)
 
-        // cv1 en el indice 15
-        var l15 = linea[15]
-        var cv1 = expresionRegular.replace(l15, "").toInt()
+        var u : Int
+        var v : Int
+        var cv1 : Double
+        var cv2 : Double 
+        
+        if (linea.size <= 5){
+            // Cuando los numeros de los vertices son muy grandes explotaba sin esto xd
+            var lineaM = linea[1].split(",")
 
-        // cv2 en el indice 22
-        var l22 = linea[22]
-        var cv2 = expresionRegular.replace(l22, "").toInt()
+            u = lineaM[0].toInt() - 1
+            v = lineaM[1].dropLast(1).toInt() - 1
+            cv1 = linea[3].toDouble()
+            cv2 = linea[4].toDouble()    
 
+        }else{
 
-        gPrim.agregarArista(Arista(u,v,costo=cv1))
-        gPrim.agregarArista(Arista(v,u,costo=cv2))
+            u = linea[1].dropLast(1).toInt() - 1
+            v = linea[2].dropLast(1).toInt() - 1
+            cv1 = linea[4].toDouble()
+            cv2 = linea[5].toDouble()
+        }
+
+        //println("u : $u , v : $v , cv1 : ${cv1} , cv2 : ${cv2} ")
+
+        gPrim.agregarArista(Arista(u,v,cv1))
+        gPrim.agregarArista(Arista(v,u,cv2))
     }
-
-  
 
     // Verificar que G' sea conexo (que todos sus vertices esten conectados por un camino)
 
@@ -122,16 +138,18 @@ fun main(args: Array<String>) {
     }
 
     for (arista in ciclo){
-        costo += arista.costo()
+        costo += arista.peso()
     }
 
     val fin = Instant.now().toEpochMilli()
 
-    println("\nInstancia : $nombre")
-    println("\nSolucion al RPP :")
-    println(ciclo)
-    println("\nCosto de la solucion : $costo")
-    println("\nTiempo que tomo encontrar la solucion : ${fin-inicio} segundos")
+    //println("\nInstancia : $nombre")
+    //println("\nSolucion al RPP :")
+    println(ciclo.joinToString(" "))
+    //println("\nCosto de la solucion : $costo")
+    println(costo)
+    //println("\nTiempo que tomo encontrar la solucion : ${fin-inicio} segundos")
+    println("${fin-inicio} segs.")
 
     // Construir Grafo completo Gp    
 }
