@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
     var aristasNoReq : Int
     var vertices : Int
     var nombre : String
-    var componentes : Int
+    var numComponentes : Int
     var costo : Double = 0.0
     
 
@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
 
     var linea1 = archivo[1].split(" ").toList()
     linea1 = linea1.filter { it != "" && it != " "}
-    componentes = linea1[2].toInt()
+    numComponentes = linea1[2].toInt()
 
     var linea2 = archivo[2].split(" ").toList()
     linea2 = linea2.filter { it != "" && it != " "}
@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
     aristasNoReq = linea4[2].toInt()
 
     /* println(nombre)
-    println(componentes)    
+    println(numComponentes)    
     println(vertices)    
     println(aristasReq)  
     println(aristasNoReq) */
@@ -57,15 +57,14 @@ fun main(args: Array<String>) {
     // Se recorren las lineas del archivo a partir de la 6ta linea hasta el valor de aristas requeridas
     // Las aristas no requeridas no nos importan
     // Se les resta 1 a cada vertice para que comiencen en 0  y que no explote el algoritmo xdxdx
-    for (i in 6..aristasReq + 6 - 1){
-    
+    for (i in 6..archivo.size - 1){
+        
+        if (i == aristasReq + 6){
+            continue
+        }
         linea = archivo[i].split(" ").toList()
         linea = linea.filter { it != "" && it != " "}
-        //var lineaM = linea[1].split(",")
         
-        println("Linea ${i + 1}")
-        println(linea)
-
         var u : Int
         var v : Int
         var cv1 : Double
@@ -87,19 +86,43 @@ fun main(args: Array<String>) {
             cv1 = linea[4].toDouble()
             cv2 = linea[5].toDouble()
         }
+        
+        //println("Linea ${i + 1}")
+        //println("u : $u , v : $v , cv1 : $cv1 , cv2 : $cv2 ")
+        
+        if (i > aristasReq + 6){
 
-        //println("u : $u , v : $v , cv1 : ${cv1} , cv2 : ${cv2} ")
+            //Aristas no requeridas
 
-        gPrim.agregarArista(Arista(u,v,cv1))
-        gPrim.agregarArista(Arista(v,u,cv2))
+            var arista1 = Arista(u,v,cv1)
+            arista1.tipo = "NReq"
+            var arista2 = Arista(v,u,cv2)
+            arista1.tipo = "NReq"
+            gPrim.agregarArista(arista1)
+            gPrim.agregarArista(arista2)
+            // De alguna forma hay que diferenciarlas en el grafo
+        }else{
+
+            // Aristas requeridas
+            var arista1 = Arista(u,v,cv1)
+            arista1.tipo = "Req"
+            var arista2 = Arista(v,u,cv2)
+            arista1.tipo = "Req"
+            gPrim.agregarArista(arista1)
+            gPrim.agregarArista(arista2)
+        }        
     }
+
+    //println(vertices)
+    //println(gPrim.obtenerNumeroDeVertices())
 
     // Verificar que G' sea conexo (que todos sus vertices esten conectados por un camino)
 
-    // var esFuertementeConexo: Boolean = CFC(g).numeroDeCFC() == 1
-    //if( esFuertementeConexo ){
+    //val compConexas = ComponentesConexasDFS(gPrim)
+    //val numComp = componentesConexas.numeroDeComponentesConexas()
+    //println(numComp == 1)
     
-    if( componentes == 1 ){
+    if( numComponentes == 1 ){
 
         // Se verifica si el grafo es par
         var par : Boolean = true
@@ -119,6 +142,7 @@ fun main(args: Array<String>) {
 
             // Para cada vertice en el grafo no dirigido, se consiguen los arcos que salen de el
             // y se agregan al grafo dirigo asociado
+            
             for (verticeInicial in 0 until gPrim.obtenerNumeroDeVertices()){
                 for (lado in gPrim.adyacentes(verticeInicial)){
                     gPrimDirigidoAsociado.agregarArco(Arco(verticeInicial, lado.elOtroVertice(verticeInicial), lado.peso()))
@@ -132,9 +156,16 @@ fun main(args: Array<String>) {
             //linea 16 en adelante
         }
     }else{
+
         // Obtenemos las componentes conexas de G' para hacer Gt
-        
         val compConexas = ComponentesConexasDFS(gPrim)
+        val componentes = compConexas.componentesConexas
+        //println("numero de componentes : ${compConexas.numeroDeComponentesConexas()}")
+        //println(componentes)
+        val grafoCompleto : GrafoDirigido = GrafoDirigido(compConexas.numeroDeComponentesConexas())
+
+
+
     }
 
     for (arista in ciclo){
