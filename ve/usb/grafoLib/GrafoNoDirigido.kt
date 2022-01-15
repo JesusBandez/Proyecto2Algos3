@@ -207,7 +207,7 @@ public class GrafoNoDirigido: Grafo {
                 }
             }
         }
-        return grado
+        return grado/2
     }
 
    

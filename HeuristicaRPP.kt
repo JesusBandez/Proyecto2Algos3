@@ -147,6 +147,9 @@ fun main(args: Array<String>) {
         
     }
 
+    print(grafoCompleto)
+    
+
     // Se establece un "isomorfismo" entre gRequerido y gPrima
     // Diccionarios usados para conservar la relacion entre un vertice en grafo gRequerido y
     // un vertice en el grafo gPrima. En caso de que se quiera buscar el vertice i de gRequerido
@@ -220,7 +223,7 @@ fun main(args: Array<String>) {
         // Si es par se obtiene el ciclo euleriano
         if (par){
             
-            
+            // Se debe cambiar ciclo Euleriano para que funcion con grafos no dirigidos////////////////////////////////////////////
             ciclo = CicloEuleriano(gPrimDirigidoAsociado).obtenerCicloEuleriano() as MutableList<Arco>
             
         }else{
@@ -251,7 +254,7 @@ fun main(args: Array<String>) {
             
             for (u in 0..verticesImpares.size-1){
 
-                var dijks = DijkstraGrafoNoDirigido(gPrim,u)
+                var dijks = DijkstraGrafoNoDirigido(grafoCompleto,u)
                 listaDijkstra.add(dijks)
 
                 for(v in 0..verticesImpares.size-1){
@@ -263,6 +266,13 @@ fun main(args: Array<String>) {
                     }
                 }
             }
+
+            println(grafoG0)
+
+            for (i in verticesImpares){
+                print("${i} ")
+            }
+            println()
 
             /* for ( i in 0..verticesImpares.size-1){
 
@@ -318,8 +328,11 @@ fun main(args: Array<String>) {
 
                         // Añadir v a G'
                     }
-
-                    gPrim.agregarArista(lado)
+                    var cualquieraDeLosVertices = lado.cualquieraDeLosVertices()
+                    gPrim.agregarArista(
+                        Arista(verticesImpares[cualquieraDeLosVertices],
+                               verticesImpares[lado.elOtroVertice(cualquieraDeLosVertices)],
+                                lado.peso()))
                 }
             }
         }
@@ -346,7 +359,7 @@ fun main(args: Array<String>) {
         // var arbolMin = ArbolMinimoCobertorKruskal(grafoG0)
 
     }
-
+    println(ciclo)
     for (arco in ciclo){
         costo += arco.peso()
     }
