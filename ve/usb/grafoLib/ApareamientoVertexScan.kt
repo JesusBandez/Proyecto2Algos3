@@ -8,6 +8,8 @@ class ApareamientoVertexScan(val g:GrafoNoDirigido){
     var e2 : MutableList<Arista> = mutableListOf()
     val m : MutableList<Arista> = mutableListOf()
 
+    var contador : Int = 0
+
     init{
 
 
@@ -19,15 +21,15 @@ class ApareamientoVertexScan(val g:GrafoNoDirigido){
 
         // Se ordenan las aristas por costo, esto significa que si tengo el vertice i y quiero encontrar el lado (i,j)
         // con menor costo, este lado sera el primero que contenga a i como fuente que se encuentre
+        
         e2.sortBy{it.peso}
-
-        while (v2.size!=0){
+        
+        while (v2.size>0){
             
             
             //Escoger vertice aleatorio
-            //var i : Int = (0..g.obtenerNumeroDeVertices()-1).random()
             var i : Int = v2.random()
-            lateinit var aristaMin: Arista
+            lateinit var aristaMin : Arista
 
             for (arista in e2){
                 if (arista.cualquieraDeLosVertices() == i){
@@ -41,15 +43,16 @@ class ApareamientoVertexScan(val g:GrafoNoDirigido){
 
             v2.remove(i)
             v2.remove(j)
-
-            //e2.remove(arista)
             
             //Eliminar todos los lados que tengan como adyacentes a i y j
-            for(lado in e2){
-                if(lado.v == i || lado.v==j){
-                    e2.remove(lado)
+
+            val iterator = e2.iterator()
+            while(iterator.hasNext()){
+                var item = iterator.next()
+                if(item.u == i || item.u == j){
+                    iterator.remove()
                 }
-            }
+            }            
         }
     }
     
