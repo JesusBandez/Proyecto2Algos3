@@ -29,6 +29,7 @@ all:	\
 	$(PKG_GRAPHLIB)/CicloEuleriano.class\
 	$(PKG_GRAPHLIB)/ApareamientoPerfectoAvido.class\
 	$(PKG_GRAPHLIB)/ApareamientoVertexScan.class\
+	$(PKG_GRAPHLIB)/CicloEulerianoGrafoNoDirigido.class\
 	HeuristicaRPP.class\
 	Main.class\
 
@@ -112,6 +113,9 @@ $(PKG_GRAPHLIB)/ApareamientoPerfectoAvido.class: $(PKG_GRAPHLIB)/ApareamientoPer
 
 $(PKG_GRAPHLIB)/ApareamientoVertexScan.class: $(PKG_GRAPHLIB)/ApareamientoVertexScan.kt
 	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/ApareamientoVertexScan.kt
+
+$(PKG_GRAPHLIB)/CicloEulerianoGrafoNoDirigido.class: $(PKG_GRAPHLIB)/CicloEulerianoGrafoNoDirigido.kt
+	$(KC) $(KFLAG) $(PKG_GRAPHLIB): $(PKG_GRAPHLIB)/CicloEulerianoGrafoNoDirigido.kt
 
 Main.class: Main.kt 
 	$(KC) $(KFLAG) .:$(PKG_GRAPHLIB) Main.kt
