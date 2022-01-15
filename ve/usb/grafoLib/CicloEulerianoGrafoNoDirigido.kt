@@ -76,12 +76,8 @@ public class CicloEulerianoGrafoNoDirigido(val g: GrafoNoDirigido) {
             sumaDeGradosInternos += gDirigidoAsociado.gradoInterior(vertice)
         }
         
-        if (hayCicloEuleriano){
-            // marcar todos los lados como inexplorados, se 
-            // explorados
-            var arcoYaExplorado: List<MutableList<Boolean>> = List(
-                gDirigidoAsociado.obtenerNumeroDeVertices(), {MutableList(gDirigidoAsociado.obtenerNumeroDeVertices(), {false})})
-
+        if (hayCicloEuleriano){            
+          
             // Obtener la lista de arcos del grafo
             var listaDeArcos = gDirigidoAsociado.arcos() as MutableList    
             

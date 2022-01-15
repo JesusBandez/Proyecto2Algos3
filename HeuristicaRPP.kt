@@ -221,7 +221,7 @@ fun main(args: Array<String>) {
         }else{
 
             println("no es par") 
-            ciclo = aPartirDeLinea16(gPrim, grafoCompleto,algoritmo)
+            ciclo = aPartirDeLinea16(gPrim, grafoCompleto,algoritmo, deGprimaAGRequerido, deGRequeridoAGPrima)
 
         }
 
@@ -248,7 +248,8 @@ fun main(args: Array<String>) {
     // Construir Grafo completo Gp    
 }
 
-fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algoritmo: String) : MutableList<Arco>{
+fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algoritmo: String, 
+     deGprimaAGRequerido: MutableMap<Int, Int>, deGRequeridoAGPrima: MutableMap<Int, Int>) : MutableList<Arco>{
 
         //linea 16 en adelante
 
@@ -256,13 +257,24 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
         // Se crea un nuevo grafo G0 a partir de los vertices con grado impar de G'
         var verticesImpares : MutableList<Int> = mutableListOf()
 
+        // Es necesarop tener la relacion del vertice i en gPrim con el vertice i en gImpar.
+        // Se usan diccionarios para ello
+        var deGPrimAGImpar: MutableMap<Int, Int> = mutableMapOf()
+        var deGImparAGPrim: MutableMap<Int, Int> = mutableMapOf()
+        var contador = 0
+
         for (vertice in 0..gPrim.obtenerNumeroDeVertices() - 1){
 
             if (gPrim.grado(vertice) % 2 != 0){
                 verticesImpares.add(vertice)
+
+                deGPrimAGImpar.put(vertice, contador)
+                deGImparAGPrim.put(contador, vertice)
+                contador++
             }
         }
 
+        
         var grafoG0 = GrafoNoDirigido(verticesImpares.size)
 
         //Determinamos el CCM entre cada par de vertices de G' para poder añadir las aristas a G0
@@ -272,18 +284,18 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
 
         var listaDijkstra : MutableList<DijkstraGrafoNoDirigido> = mutableListOf()
         var matrizCCM  = Array(verticesImpares.size){Array(verticesImpares.size) {Double.POSITIVE_INFINITY} }
-        
+
         for (u in 0..verticesImpares.size-1){
 
-            var dijks = DijkstraGrafoNoDirigido(grafoCompleto,u)
+            var dijks = DijkstraGrafoNoDirigido(grafoCompleto, deGprimaAGRequerido.get(deGImparAGPrim.get(u)!!)!!)
             listaDijkstra.add(dijks)
 
             for(v in 0..verticesImpares.size-1){
 
-                matrizCCM[u][v] = dijks.costoHasta(v)
+                matrizCCM[u][v] = dijks.costoHasta(deGprimaAGRequerido.get(deGImparAGPrim.get(v)!!)!!)
 
-                if (dijks.costoHasta(v) < Double.POSITIVE_INFINITY){
-                    grafoG0.agregarArista(Arista(u,v,dijks.costoHasta(v)))
+                if (matrizCCM[u][v] < Double.POSITIVE_INFINITY){
+                    grafoG0.agregarArista(Arista(u,v, matrizCCM[u][v]))
                 }
             }
         }
@@ -305,41 +317,79 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
 
             m = ApareamientoVertexScan(grafoG0).obtenerApareamiento() as MutableList
         }
+        /* 
+        for (arco in m){
+            var unV = arco.cualquieraDeLosVertices()
+            var elOt = arco.elOtroVertice(unV)
+            
+            println("[${deGImparAGPrim.get(unV)}-${deGImparAGPrim.get(elOt)} : ${arco.peso()}]")
+        }
+        */
 
+        var contadorDeNuevosVertices = 0
         for (arista in m){
 
             // Obtener el CCM entre los dos lados de la arista
             // Como ya se calcularon con Dijkstra, se usa el metodo caminoHasta para obtenerlos
             var u = arista.cualquieraDeLosVertices()
             var v = arista.elOtroVertice(u)
-            var camino = listaDijkstra[v].obtenerCaminoDeCostoMinimo( v )
+            var camino = listaDijkstra[u].obtenerCaminoDeCostoMinimo( deGprimaAGRequerido.get(deGImparAGPrim.get(v)!!)!! )
 
+            
             for (lado in camino){
-                // No se han agregado los vertices nuevos, funcionara asi?
+                // El camino está dado en vertices de gCompleto
 
 
                 //Se verifica si u y v pertenecen a G' y luego
                 //Se agrega el lado (u,v) a G' asi este duplicado
 
-                // Si es mayor al numero de vertices significa que no pertenece
-                if( u > gPrim.obtenerNumeroDeVertices() ){
+                // Si no u esta en gPrim
+                if (deGRequeridoAGPrima.get(u) == null){
 
-                    // Añadir u a G'
+                    deGRequeridoAGPrima.put(u ,gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices, u)
+                    contador++
                 }
-                // Si es mayor al numero de vertices significa que no pertenece
-                if( v > gPrim.obtenerNumeroDeVertices() ){
+               // Si no v esta en gPrim
+                if (deGRequeridoAGPrima.get(v) == null){
 
-                    // Añadir v a G'
-                }
-                var cualquieraDeLosVertices = lado.cualquieraDeLosVertices()
-                gPrim.agregarArista(
-                    Arista(verticesImpares[cualquieraDeLosVertices],
-                            verticesImpares[lado.elOtroVertice(cualquieraDeLosVertices)],
-                            lado.peso()))
+                    deGRequeridoAGPrima.put(v ,gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices, v)
+                    contador++
+                }               
             }
         }
+       
+        // Crear nuevo grafo gPrim con los vertices agregados
+        var gTemp = GrafoNoDirigido(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
 
-        return CicloEulerianoGrafoNoDirigido(gPrim).obtenerCicloEuleriano() as MutableList<Arco>
+        for (lado in gPrim.aristas()){
+            gTemp.agregarArista(lado)
+        }
+
+        // Agregar los nuevos lados a gTemp
+                   
+            println(deGRequeridoAGPrima)
+        for (arista in m){
+
+            // Obtener el CCM entre los dos lados de la arista
+            // Como ya se calcularon con Dijkstra, se usa el metodo caminoHasta para obtenerlos
+            var u = arista.cualquieraDeLosVertices()
+            var v = arista.elOtroVertice(u)
+            var camino = listaDijkstra[u].obtenerCaminoDeCostoMinimo( deGprimaAGRequerido.get(deGImparAGPrim.get(v)!!)!! )
+            println(camino)
+ 
+            for (lado in camino){
+                var unVertice = lado.cualquieraDeLosVertices()
+                var elOtro = lado.elOtroVertice(unVertice)
+
+                gTemp.agregarArista(Arista(deGRequeridoAGPrima.get(unVertice)!!, deGRequeridoAGPrima.get(elOtro)!!, arista.peso()))
+ 
+            }
+        }
+        println("gTemp:")
+        print(gTemp)
+        return CicloEulerianoGrafoNoDirigido(gTemp).obtenerCicloEuleriano() as MutableList<Arco>
 }
 
 fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algoritmo: String, 
@@ -375,7 +425,7 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
                 var costo: Double = Double.POSITIVE_INFINITY
                 for (verticeI in verticesComponenteI){
 
-                    var dijks = DijkstraGrafoNoDirigido(grafoCompleto, verticeI)
+                    var dijks = DijkstraGrafoNoDirigido(grafoCompleto, deGprimaAGRequerido.get(verticeI)!!)
               
                     for (verticeJ in verticesComponenteJ){
                         if(dijks.costoHasta(verticeJ) < costo){
@@ -442,7 +492,8 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
                 gTemp.agregarArista(Arista(
                     deGRequeridoAGPrima.get(unoDeLosVertices)!!, deGRequeridoAGPrima.get(elOtroDeLosVertice)!!, arista.peso()))
             }
-        }    
+        }
+        
 
-    return aPartirDeLinea16(gTemp, grafoCompleto, algoritmo)
+    return aPartirDeLinea16(gTemp, grafoCompleto, algoritmo, deGprimaAGRequerido, deGRequeridoAGPrima)
 }

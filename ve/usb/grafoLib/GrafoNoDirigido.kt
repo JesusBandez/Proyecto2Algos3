@@ -191,23 +191,7 @@ public class GrafoNoDirigido: Grafo {
             throw RuntimeException("No existe el vertice ${v} en el grafo")
         }        
 
-        var grado: Int = listaDeAdyacencias[v].size
-
-        // Iterar por cada arco en cada lista de adyacencias de los vertices, excepto por 
-        // las adyacencias de v, sumando los arcos en donde v es el sumidero.
-        for ((vertice, aristasIndicentes) in listaDeAdyacencias.withIndex()){
-            if (vertice == v){
-                continue
-            }
-            else{
-                for (arista in aristasIndicentes){
-                    if (arista.elOtroVertice(vertice) == v){
-                        grado += 1
-                    }
-                }
-            }
-        }
-        return grado/2
+        return listaDeAdyacencias[v].size
     }
 
    
