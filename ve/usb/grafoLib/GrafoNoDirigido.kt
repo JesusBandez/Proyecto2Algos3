@@ -117,7 +117,10 @@ public class GrafoNoDirigido: Grafo {
         // pueden haber bucles en un grafo no dirigido
         if (a.u == a.v){
             return
-        }        
+        }
+        if (!(0 <= a.u && a.u < this.numeroDeVertices) || !(0 <= a.v && a.v < this.numeroDeVertices)){
+            throw RuntimeException("El vertice ${a.u} o el vertice ${a.v} no pertenece al grafo")
+        }
 
         // Se agrega la arista como incidente en el vertice a.u y el a.v
         listaDeAdyacencias[a.u].add(a)

@@ -11,8 +11,7 @@ fun main(args: Array<String>) {
 
     val algoritmo : String = args[0]
     val instancia : String = args[1]  
-    var aristasReq : Int
-    var aristasNoReq : Int
+    var aristasReq : Int 
     var vertices : Int
     var nombre : String
     var componentes : Int
@@ -38,9 +37,6 @@ fun main(args: Array<String>) {
     linea3 = linea3.filter { it != "" && it != " "}
     aristasReq = linea3[2].toInt()
 
-    var linea4 = archivo[4].split(" ").toList()
-    linea4 = linea4.filter { it != "" && it != " "}
-    aristasNoReq = linea4[2].toInt()
 
     println(nombre)
     println(componentes)
@@ -70,7 +66,7 @@ fun main(args: Array<String>) {
         var u : Int
         var v : Int
         var cv1 : Double
-        var cv2 : Double 
+  
         
         // Para cuando el valor de algun vertice es 1000, el split no funciona de la misma manera
         // Porque en este caso no hay espacio entre los valores
@@ -81,14 +77,14 @@ fun main(args: Array<String>) {
             u = lineaM[0].toInt() - 1
             v = lineaM[1].dropLast(1).toInt() - 1
             cv1 = linea[3].toDouble()
-            cv2 = linea[4].toDouble()    
+      
 
         }else{
 
             u = linea[1].dropLast(1).toInt() - 1
             v = linea[2].dropLast(1).toInt() - 1
             cv1 = linea[4].toDouble()
-            cv2 = linea[5].toDouble()
+          
         }
         
         //println("Linea ${i + 1}")
@@ -250,7 +246,8 @@ fun main(args: Array<String>) {
 
 fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algoritmo: String, 
      deGprimaAGRequerido: MutableMap<Int, Int>, deGRequeridoAGPrima: MutableMap<Int, Int>) : MutableList<Arco>{
-
+       
+         
         //linea 16 en adelante
 
         // Si el grafo es conexo pero no par, 
@@ -334,7 +331,7 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
             var u = arista.cualquieraDeLosVertices()
             var v = arista.elOtroVertice(u)
             var camino = listaDijkstra[u].obtenerCaminoDeCostoMinimo( deGprimaAGRequerido.get(deGImparAGPrim.get(v)!!)!! )
-
+            print("Camino que no se que hace: $camino")
             
             for (lado in camino){
                 // El camino está dado en vertices de gCompleto
@@ -342,34 +339,35 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
 
                 //Se verifica si u y v pertenecen a G' y luego
                 //Se agrega el lado (u,v) a G' asi este duplicado
+                var unVertice = lado.cualquieraDeLosVertices()
+                var elOtroVertice = lado.elOtroVertice(unVertice)
+                
+                if (deGRequeridoAGPrima.get(unVertice) == null){
 
-                // Si no u esta en gPrim
-                if (deGRequeridoAGPrima.get(u) == null){
-
-                    deGRequeridoAGPrima.put(u ,gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
-                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices, u)
-                    contador++
+                    deGRequeridoAGPrima.put(unVertice ,gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices, unVertice)
+                    contadorDeNuevosVertices++
                 }
                // Si no v esta en gPrim
-                if (deGRequeridoAGPrima.get(v) == null){
+                if (deGRequeridoAGPrima.get(elOtroVertice) == null){
 
-                    deGRequeridoAGPrima.put(v ,gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
-                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices, v)
-                    contador++
+                    deGRequeridoAGPrima.put(elOtroVertice ,gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices, elOtroVertice)
+                    contadorDeNuevosVertices++
                 }               
             }
         }
-       
+        println("Nuevos vertices: $contadorDeNuevosVertices")
         // Crear nuevo grafo gPrim con los vertices agregados
         var gTemp = GrafoNoDirigido(gPrim.obtenerNumeroDeVertices() + contadorDeNuevosVertices)
-
+       
         for (lado in gPrim.aristas()){
             gTemp.agregarArista(lado)
         }
 
         // Agregar los nuevos lados a gTemp
                    
-            println(deGRequeridoAGPrima)
+        
         for (arista in m){
 
             // Obtener el CCM entre los dos lados de la arista
@@ -377,18 +375,17 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
             var u = arista.cualquieraDeLosVertices()
             var v = arista.elOtroVertice(u)
             var camino = listaDijkstra[u].obtenerCaminoDeCostoMinimo( deGprimaAGRequerido.get(deGImparAGPrim.get(v)!!)!! )
-            println(camino)
+          
  
             for (lado in camino){
                 var unVertice = lado.cualquieraDeLosVertices()
-                var elOtro = lado.elOtroVertice(unVertice)
-
-                gTemp.agregarArista(Arista(deGRequeridoAGPrima.get(unVertice)!!, deGRequeridoAGPrima.get(elOtro)!!, arista.peso()))
+                var elOtro = lado.elOtroVertice(unVertice)              
+                gTemp.agregarArista(Arista(deGRequeridoAGPrima.get(unVertice)!!, deGRequeridoAGPrima.get(elOtro)!!, lado.peso()))
  
             }
         }
-        println("gTemp:")
-        print(gTemp)
+        println("gTemp last:")
+        println(gTemp)
         return CicloEulerianoGrafoNoDirigido(gTemp).obtenerCicloEuleriano() as MutableList<Arco>
 }
 
@@ -428,10 +425,15 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
                     var dijks = DijkstraGrafoNoDirigido(grafoCompleto, deGprimaAGRequerido.get(verticeI)!!)
               
                     for (verticeJ in verticesComponenteJ){
-                        if(dijks.costoHasta(verticeJ) < costo){
-                            costo = dijks.costoHasta(verticeJ)
+                        var verticeJEnGrafoCompleto = deGprimaAGRequerido.get(verticeJ)!!
 
-                            caminosCostoMinimo[componenteI][componenteJ] = dijks.obtenerCaminoDeCostoMinimo(verticeJ)
+                        if(dijks.costoHasta(verticeJEnGrafoCompleto) < costo){
+                            
+
+                            costo = dijks.costoHasta(verticeJEnGrafoCompleto)
+
+                            caminosCostoMinimo[componenteI][componenteJ] = dijks.obtenerCaminoDeCostoMinimo(verticeJEnGrafoCompleto)
+                            caminosCostoMinimo[componenteJ][componenteI] = dijks.obtenerCaminoDeCostoMinimo(verticeJEnGrafoCompleto)
                         }
                     }
                 }
@@ -448,52 +450,65 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
         var arbolMin = ArbolMinimoCobertorPrim(grafoGt, 0)
         var ladosEt = arbolMin.obtenerLados()
 
+        // Conseguir los vertices de Et que no estan en gPrim
         var cantidadDeNuevosVertices = 0
         for (lado in ladosEt){
-            var componenteId = lado.cualquieraDeLosVertices()
-            var otraComponenteId = lado.elOtroVertice(componenteId)
 
-            for (vertice in compConexas.verticesEnComponenteConexa(componenteId)){
-                // Comprobar que el vertice no está en gPrim
-                if (deGRequeridoAGPrima.get(vertice) == null){
-                    // Si el vertice no está en gPrim, se debe agregar
-                    deGRequeridoAGPrima.put(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices, vertice)
-                    deGprimaAGRequerido.put(vertice, cantidadDeNuevosVertices)
+            // Conseguir el camino de coste minimo asociado al lado
+            var unaComponente = lado.cualquieraDeLosVertices()
+
+            var camino = caminosCostoMinimo[unaComponente][lado.elOtroVertice(unaComponente)]!!
+
+            for (arista in camino){
+
+                var unVertice = arista.cualquieraDeLosVertices()
+                var elOtroVertice = arista.elOtroVertice(unVertice)
+
+                // comprobar que los vertices del camino estan en gPrim
+                if(deGRequeridoAGPrima.get(unVertice) == null){
+                    deGRequeridoAGPrima.put(unVertice, gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices, unVertice)
+
+                    cantidadDeNuevosVertices++
+                }
+
+                if(deGRequeridoAGPrima.get(elOtroVertice) == null){
+                    deGRequeridoAGPrima.put(unVertice, gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices, unVertice)
+
                     cantidadDeNuevosVertices++
                 }
             }
-
-            for (vertice in compConexas.verticesEnComponenteConexa(otraComponenteId)){
-                // Comprobar que el vertice no está en gPrim
-                if (deGRequeridoAGPrima.get(vertice) == null){
-                    // Si el vertice no está en gPrim, se debe agregar
-                    deGRequeridoAGPrima.put(cantidadDeNuevosVertices, vertice)
-                    deGprimaAGRequerido.put(vertice, cantidadDeNuevosVertices)
-                    cantidadDeNuevosVertices++
-                }
-            }
-
         }
+
+        println("de gPrima a gRequerido")
+        println(deGprimaAGRequerido)
+        println("gPrimaOriginal")
+        print(gPrim)
+
         // Agregar los vertices a gPrima
         var gTemp = GrafoNoDirigido(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices)
 
         for (lado in gPrim.aristas()){
             gTemp.agregarArista(lado)
         }
-        
+        println("ladosEt: $ladosEt")
         for (lado in ladosEt){
+            // ladosEt son los lados del arbol
             var unVertice = lado.cualquieraDeLosVertices()
 
             var caminoCosteMinimo = caminosCostoMinimo[unVertice][lado.elOtroVertice(unVertice)]!!
-
+            println(caminoCosteMinimo)
             for (arista in caminoCosteMinimo){
+
                 var unoDeLosVertices = arista.cualquieraDeLosVertices()
                 var elOtroDeLosVertice = arista.elOtroVertice(unoDeLosVertices)
                 gTemp.agregarArista(Arista(
                     deGRequeridoAGPrima.get(unoDeLosVertices)!!, deGRequeridoAGPrima.get(elOtroDeLosVertice)!!, arista.peso()))
             }
         }
-        
+    println("gTemp antes de linea 16:")
+    println(gTemp)
 
     return aPartirDeLinea16(gTemp, grafoCompleto, algoritmo, deGprimaAGRequerido, deGRequeridoAGPrima)
 }
