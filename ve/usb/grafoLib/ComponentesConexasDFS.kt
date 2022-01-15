@@ -128,6 +128,10 @@ public class ComponentesConexasDFS(val g: GrafoNoDirigido) {
       return componentesConexas[compID].size
     }
 
+    fun verticesEnComponenteConexa(compID: Int) : MutableList<Int> {
+      return componentesConexas[compID]
+    }
+
     /*
     Clase interna que lleva las propiedades de un vertice perteneciente al grafo.
     El vertice que sea representado por entero 6 tiene sus propiedades en la lista

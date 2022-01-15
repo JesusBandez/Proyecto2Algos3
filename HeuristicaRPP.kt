@@ -147,7 +147,7 @@ fun main(args: Array<String>) {
         
     }
 
-    print(grafoCompleto)
+ 
     
 
     // Se establece un "isomorfismo" entre gRequerido y gPrima
@@ -206,7 +206,7 @@ fun main(args: Array<String>) {
     // Se ejecuta el algoritmo CFC sobre el grafo dirigido asociado  
     
     var esFuertementeConexo: Boolean = CFC(gPrimDirigidoAsociado).numeroDeCFC() == 1   
-    println(esFuertementeConexo)
+
     if( esFuertementeConexo){
 
         // Se verifica si el grafo es par
@@ -267,13 +267,6 @@ fun main(args: Array<String>) {
                 }
             }
 
-            println(grafoG0)
-
-            for (i in verticesImpares){
-                print("${i} ")
-            }
-            println()
-
             /* for ( i in 0..verticesImpares.size-1){
 
                 for (j in 0..verticesImpares-1){
@@ -314,7 +307,9 @@ fun main(args: Array<String>) {
                 var camino = listaDijkstra[v].obtenerCaminoDeCostoMinimo( v )
 
                 for (lado in camino){
-                    
+                    // No se han agregado los vertices nuevos, funcionara asi?
+
+
                     //Se verifica si u y v pertenecen a G' y luego
                     //Se agrega el lado (u,v) a G' asi este duplicado
 
@@ -336,6 +331,15 @@ fun main(args: Array<String>) {
                 }
             }
         }
+        gPrimDirigidoAsociado = GrafoDirigido(gPrim.obtenerNumeroDeVertices())
+
+            // Para cada vertice en el grafo no dirigido, se consiguen los arcos que salen de el
+            // y se agregan al grafo dirigo asociado
+            for (verticeInicial in 0 until gPrim.obtenerNumeroDeVertices()){
+                for (lado in gPrim.adyacentes(verticeInicial)){
+                    gPrimDirigidoAsociado.agregarArco(Arco(verticeInicial, lado.elOtroVertice(verticeInicial), lado.peso()))
+                }
+            }
 
         // En este punto se supone que G' es par. Se obtiene el ciclo euleriano de G'
         ciclo = CicloEuleriano(gPrimDirigidoAsociado).obtenerCicloEuleriano() as MutableList<Arco>
@@ -343,8 +347,8 @@ fun main(args: Array<String>) {
 
     }else{
         // G' no es conexo
-
-        //Linea 9 en adelante
+        println("gPrim:")
+        println(gPrim)
         // Obtenemos las componentes conexas de G' para hacer Gt
         val compConexas = ComponentesConexasDFS(gPrim)
 
@@ -352,11 +356,221 @@ fun main(args: Array<String>) {
         // Se crea Gt con |V| = numero de CC de G' 
         var grafoGt : GrafoNoDirigido = GrafoNoDirigido(compConexas.numeroDeComponentesConexas())
 
+        var componentesConLado: Array<Array<Boolean>> = Array(compConexas.numeroDeComponentesConexas(), {Array(
+            compConexas.numeroDeComponentesConexas(), {false}
+        )})
+        
+        var caminosCostoMinimo: MutableList<MutableList<Iterable<Arista>?>> = MutableList(compConexas.numeroDeComponentesConexas(), {
+            MutableList(compConexas.numeroDeComponentesConexas(), {mutableListOf()})
+        })
+
+        for (componenteI in 0 until grafoGt.obtenerNumeroDeVertices()){
+            for (componenteJ in 0 until grafoGt.obtenerNumeroDeVertices()){
+
+                if (componenteI == componenteJ){
+                    continue
+                }
+
+                if (componentesConLado[componenteI][componenteJ]){
+                    continue
+                }
+
+                var verticesComponenteI = compConexas.verticesEnComponenteConexa(componenteI)
+                var verticesComponenteJ = compConexas.verticesEnComponenteConexa(componenteJ)
+
+                var costo: Double = Double.POSITIVE_INFINITY
+                for (verticeI in verticesComponenteI){
+
+                    var dijks = DijkstraGrafoNoDirigido(grafoCompleto, verticeI)
+              
+                    for (verticeJ in verticesComponenteJ){
+                        if(dijks.costoHasta(verticeJ) < costo){
+                            costo = dijks.costoHasta(verticeJ)
+
+                            caminosCostoMinimo[componenteI][componenteJ] = dijks.obtenerCaminoDeCostoMinimo(verticeJ)
+                        }
+                    }
+                }
+
+                grafoGt.agregarArista(Arista(componenteI, componenteJ, costo))
+                componentesConLado[componenteI][componenteJ] = true
+                componentesConLado[componenteJ][componenteI] = true
+            }
+        }
+       
+        println(grafoGt)
+        for (i in 0 until 3){
+            for(vertice in compConexas.verticesEnComponenteConexa(i)){
+                print("$vertice ")
+            }
+            println()
+        }
+
 
         // Luego de obtener Gt se calcula el arbol cobertor del mismo
         // Usaremos la clase ArbolMinimoCobertorPrim para ello
 
-        // var arbolMin = ArbolMinimoCobertorKruskal(grafoG0)
+        var arbolMin = ArbolMinimoCobertorPrim(grafoGt, 0)
+        var ladosEt = arbolMin.obtenerLados()
+
+        var cantidadDeNuevosVertices = 0
+        for (lado in ladosEt){
+            var componenteId = lado.cualquieraDeLosVertices()
+            var otraComponenteId = lado.elOtroVertice(componenteId)
+
+            for (vertice in compConexas.verticesEnComponenteConexa(componenteId)){
+                // Comprobar que el vertice no está en gPrim
+                if (deGRequeridoAGPrima.get(vertice) == null){
+                    // Si el vertice no está en gPrim, se debe agregar
+                    deGRequeridoAGPrima.put(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices, vertice)
+                    deGprimaAGRequerido.put(vertice, cantidadDeNuevosVertices)
+                    cantidadDeNuevosVertices++
+                }
+            }
+
+            for (vertice in compConexas.verticesEnComponenteConexa(otraComponenteId)){
+                // Comprobar que el vertice no está en gPrim
+                if (deGRequeridoAGPrima.get(vertice) == null){
+                    // Si el vertice no está en gPrim, se debe agregar
+                    deGRequeridoAGPrima.put(cantidadDeNuevosVertices, vertice)
+                    deGprimaAGRequerido.put(vertice, cantidadDeNuevosVertices)
+                    cantidadDeNuevosVertices++
+                }
+            }
+
+        }
+
+        for (lado in ladosEt){
+            print("$lado ")
+        }
+        println()
+
+        // Agregar los vertices a gPrima
+        var gTemp = GrafoNoDirigido(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices)
+
+        for (lado in gPrim.aristas()){
+            gTemp.agregarArista(lado)
+        }
+        
+        for (lado in ladosEt){
+            var unVertice = lado.cualquieraDeLosVertices()
+
+            var caminoCosteMinimo = caminosCostoMinimo[unVertice][lado.elOtroVertice(unVertice)]!!
+
+            for (arista in caminoCosteMinimo){
+                var unoDeLosVertices = arista.cualquieraDeLosVertices()
+                var elOtroDeLosVertice = arista.elOtroVertice(unoDeLosVertices)
+                gTemp.agregarArista(Arista(
+                    deGRequeridoAGPrima.get(unoDeLosVertices)!!, deGRequeridoAGPrima.get(elOtroDeLosVertice)!!, arista.peso()))
+            }
+        }
+        
+        println("gPrim con lados ET:")
+        gPrim = gTemp
+        print(gPrim)
+
+        //linea 16 en adelante
+
+        // Si el grafo es conexo pero no par, 
+        // Se crea un nuevo grafo G0 a partir de los vertices con grado impar de G'
+        var verticesImpares : MutableList<Int> = mutableListOf()
+
+        for (vertice in 0..gPrim.obtenerNumeroDeVertices() - 1){
+
+            if (gPrim.grado(vertice) % 2 != 0){
+                verticesImpares.add(vertice)
+            }
+        }
+
+        grafoG0 = GrafoNoDirigido(verticesImpares.size)
+
+        //Determinamos el CCM entre cada par de vertices de G' para poder añadir las aristas a G0
+        //Para hallar los CCM usamos el algoritmo de Dijkstra para grafos no dirigidos sobre cada vertice
+        //Se puede usar porque todo cv es mayor o igual a 0
+        //Se añade cada objeto Dijkstra a una lista porque mas adelante se necesitan los caminos de costo minimo
+
+        var listaDijkstra : MutableList<DijkstraGrafoNoDirigido> = mutableListOf()
+        var matrizCCM  = Array(verticesImpares.size){Array(verticesImpares.size) {Double.POSITIVE_INFINITY} }
+        
+        for (u in 0..verticesImpares.size-1){
+
+            var dijks = DijkstraGrafoNoDirigido(grafoCompleto,u)
+            listaDijkstra.add(dijks)
+
+            for(v in 0..verticesImpares.size-1){
+
+                matrizCCM[u][v] = dijks.costoHasta(v)
+
+                if (dijks.costoHasta(v) < Double.POSITIVE_INFINITY){
+                    grafoG0.agregarArista(Arista(u,v,dijks.costoHasta(v)))
+                }
+            }
+        }
+
+        // Linea 17
+        // Debemos calcular el apareamiento perfecto de costo minimo de G0
+        // Aqui, dependiendo de lo que se especifique como entrada, se usaran ApareamientoPerfectoAvido o ApareamientoVertexScan
+
+        var m : MutableList<Arista> = mutableListOf()
+        if (algoritmo == "a"){
+
+            // Se usa ApareamientoPerfectoAvido
+
+            m = ApareamientoPerfectoAvido(grafoG0).obtenerApareamiento() as MutableList
+
+        }else if (algoritmo == "v") {
+
+            // Se usa ApareamientoVertexScan
+
+            m = ApareamientoVertexScan(grafoG0).obtenerApareamiento() as MutableList
+        }
+
+    // Bucle lineas 18 - 23
+        for (arista in m){
+
+            // Obtener el CCM entre los dos lados de la arista
+            // Como ya se calcularon con Dijkstra, se usa el metodo caminoHasta para obtenerlos
+            var u = arista.cualquieraDeLosVertices()
+            var v = arista.elOtroVertice(u)
+            var camino = listaDijkstra[v].obtenerCaminoDeCostoMinimo( v )
+
+            for (lado in camino){
+                
+                //Se verifica si u y v pertenecen a G' y luego
+                //Se agrega el lado (u,v) a G' asi este duplicado
+
+                // Si es mayor al numero de vertices significa que no pertenece
+                if( u > gPrim.obtenerNumeroDeVertices() ){
+
+                    // Añadir u a G'
+                }
+                // Si es mayor al numero de vertices significa que no pertenece
+                if( v > gPrim.obtenerNumeroDeVertices() ){
+
+                    // Añadir v a G'
+                }
+                var cualquieraDeLosVertices = lado.cualquieraDeLosVertices()
+                gPrim.agregarArista(
+                    Arista(verticesImpares[cualquieraDeLosVertices],
+                            verticesImpares[lado.elOtroVertice(cualquieraDeLosVertices)],
+                            lado.peso()))
+            }            
+        }
+
+        println("gPrim antes de ser del ciclo euleriano")
+        print(gPrim)
+    gPrimDirigidoAsociado = GrafoDirigido(gPrim.obtenerNumeroDeVertices())
+
+        // Para cada vertice en el grafo no dirigido, se consiguen los arcos que salen de el
+        // y se agregan al grafo dirigo asociado
+        for (verticeInicial in 0 until gPrim.obtenerNumeroDeVertices()){
+            for (lado in gPrim.adyacentes(verticeInicial)){
+                gPrimDirigidoAsociado.agregarArco(Arco(verticeInicial, lado.elOtroVertice(verticeInicial), lado.peso()))
+            }
+        }
+        // En este punto se supone que G' es par. Se obtiene el ciclo euleriano de G'
+        ciclo = CicloEuleriano(gPrimDirigidoAsociado).obtenerCicloEuleriano() as MutableList<Arco>
+        //Luego de obtener el ciclo euleriano se calcula el costo del camino y el algoritmo termina
 
     }
     println(ciclo)

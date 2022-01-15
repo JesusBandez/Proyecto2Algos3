@@ -1,45 +1,69 @@
 package ve.usb.grafoLib
 
-// Clase arista que hereda las propiedades de la clase abstracta lado
-public class Arista(val v : Int,
-		    val u : Int,
-		    val peso : Double = 0.0) : Comparable<Arista>, Lado(v, u) {
+public class Arista(val v: Int,
+		    val u: Int,
+		    val peso: Double =0.0) : Comparable<Arista>, Lado(v, u) {
+    /*
+    Representacion de un arista para un grafo no dirigido.file
 
-    // Retorna el peso del arco
+    Son necesarios los siguientes parametros:
+    u: Identificador de un vertice incidente a la arista
+    v: Identificador del otro vertice incidente a la arista, no puede er igual a u
+    peso: Valor asociado a la arista, por defecto = 0.0
+    */
+
+
     fun peso() : Double {
-        // Precondicion, la arista debe tener peso (asi sea 0.0)
-        // !!(this.peso!=null)
+        /*Devuelve el peso asociado a la arista 
+        Precondicion: true
+        Postcondicion: retorna el peso de la arista
+        Tiempo de ejecucion: O(1)
+        */
+        return peso
 
-        // Tiempo de ejecucion : O(1) se retorma una variable solamente
-	    return this.peso
     }
 
-    // Representación en string de la arista
     override fun toString() : String {
-        // Tiempo de ejecucion : O(1) se retorma una variable solamente
-        return "${this.v} ---- ${this.u}  = ${this.u} ---- ${this.v}"
+     /*  Retorna una string con la representacion de la arista usando el siguiente formato:
+
+     [u-v : pesoAsociado]
+
+     ejemplo con una arista con un vertice 0, el otro 2 y peso 200.1
+
+     [0-2 : 200.1]
+     
+     Precondicion: true
+     Postcondicion: retorna una string con la representacion de la arista
+     Tiempo de ejecucion: O(1)
+
+     */
+     return "[${u}-${v} : ${peso}]"
+
+
     }
 
-    /* 
+    
+     override fun compareTo(other: Arista): Int {
+     /* 
      Se compara dos arista con respecto a su peso. 
      Si this.obtenerPeso > other.obtenerPeso entonces
      retorna 1. Si this.obtenerPeso < other.obtenerPeso 
      entonces retorna -1. Si this.obtenerPeso == other.obtenerPeso
-     entonces retorna 0 
+     entonces retorna 0
+     Precondicion: other es otra arista
+     Postcondicion: Si this.obtenerPeso > other.obtenerPeso entonces
+          retorna 1. Si this.obtenerPeso < other.obtenerPeso 
+          entonces retorna -1. Si this.obtenerPeso == other.obtenerPeso
+          entonces retorna 0
+     Tiempo De ejecucion: O(1)
      */
-     override fun compareTo(other: Arista): Int {
+     if(this.peso() > other.peso()){
+          return 1
+          } else if (this.peso() < other.peso()){
+          return -1
+          } else {
+          return 0
+          }
 
-        // Precondicion
-        // !!(other!=null)
-
-        if (this.peso<other.peso) {
-            return -1
-        } else if (this.peso>other.peso){
-            return 1
-        }else{
-            return 0
-        }
-
-        // Tiempo de ejecucion : O(1) se retorma una variable solamente
-    }
-}
+     }
+} 
