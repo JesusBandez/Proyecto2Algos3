@@ -1,7 +1,16 @@
 
+// Se importan las librerias File pra la lectura del archivo de texto
+// E instant para tomar el tiempo que toma el algoritmo en ejecutarse
 import java.io.File
 import java.time.Instant
 
+// Algoritmo para determinar la solucion a una instancia del problema RPP.
+// Se reciben 2 argumentos en la entrada del algoritmo.
+// El primer argumento representa que heuristica se quiere utilizar para resolver la instancia.
+// Dicho argumento debe ser la letra a para utilizar la heuristica avida o la letra v para utilizar la heuristica Vertex-Scan.
+// El segundo argumento representa la ruta al archivo de texto donde se encuentran los datos del grafo que
+// representa la instancia del problema RRP a resolver.
+// En la salida el algoritmo devuelve un ciclo C que representa una solucion factible a la instancia suministrada.
 fun main(args: Array<String>) {
     
     // Comprobar argumentos
@@ -28,16 +37,22 @@ fun main(args: Array<String>) {
     // Guardar el momento en el que inicia el algoritmo
     val inicio = Instant.now().toEpochMilli()
 
-
+    // Se crean las variables a ser usadas para leer la informacion del grafo desde el archivo de texto
     var aristasReq : Int 
     var vertices : Int
     var costo : Double = 0.0
+
+    // Para leer el archivo de texto se emplea la libreria File de Java con su metodo bufferedReader
+    // Este metodo permite manipular cada linea del archivo individualmente y procesar la informacion que esta contenga
     var archivo = File(instancia).bufferedReader().readLines()
 
+    // Con el metodo split() se agregan los contenidos de la linea requerida a una lista para su facil lectura
+    // Se extrae de la linea 3 del archivo el numero de vertices del grafo
     var linea2 = archivo[2].split(" ").toList()
     linea2 = linea2.filter { it != "" && it != " "}
     vertices = linea2[2].toInt()
 
+    // Se extrae de la linea 4 del archivo el numero de aristas requeridas del problema
     var linea3 = archivo[3].split(" ").toList()
     linea3 = linea3.filter { it != "" && it != " "}
     aristasReq = linea3[2].toInt()
@@ -46,10 +61,15 @@ fun main(args: Array<String>) {
 
     // Grafo que contiene solo los lados requeridos
     val gRequerido : GrafoNoDirigido = GrafoNoDirigido(vertices)
+
+    // Grafo completo con todos los lados, tanto requeridos como no requeridos
     val grafoCompleto : GrafoNoDirigido = GrafoNoDirigido(vertices)
 
+    // Se lee el archivo de texto desde la linea 7 en adelante, que es donde se encuentra la informacion de cada arista
+    // Esta informacion es usada para crear el grafo completo
     for (i in 6..archivo.size-1){
 
+        // Se salta la linea  aristasReq + 6 ya que es donde se encuentra el texto ARISTAS NO REQUERIDAS          
         if(i == aristasReq + 6){
             continue
         }
@@ -59,12 +79,17 @@ fun main(args: Array<String>) {
         linea = archivo[i].split(" ").toList()
         linea = linea.filter { it != "" && it != " "}
         
+        // Variables donde se almacenan los datos de cada arista obtenidos del archivo de texto
+        // No se añade una variable para cv2 ya que en todas las instancias cv1 y cv2 son iguales
         var u : Int
         var v : Int
         var cv1 : Double  
         
-        // Para cuando el valor de algun vertice es 1000, el split no funciona de la misma manera
-        // Porque en este caso no hay espacio entre los valores
+        // Cuando el valor de alguno de los vertices de la arista es igual o mayor a 1000 se procesa la linea correspondiente
+        // de manera distinta, ya que el metodo split no separa los valores correctamente en estos casos
+        // Si no es el caso, se procesa la informacion normalmente
+        // Se le resta 1 al valor de cada vertice para que los mismos comiencen en 0 y no en 1
+        // De esta manera se adaptan los datos de entrada a la implementacion de grafos disponible
         if (linea.size <= 5){
             
             var lineaM = linea[1].split(",")
@@ -74,34 +99,38 @@ fun main(args: Array<String>) {
             cv1 = linea[3].toDouble()      
 
         }else{
-
+            
             u = linea[1].dropLast(1).toInt() - 1
             v = linea[2].dropLast(1).toInt() - 1
             cv1 = linea[4].toDouble()
           
         }
 
+        // Se crea el objeto tipo arista y se añade al grafo completo en cada iteracion
         var arista1 = Arista(u,v,cv1)                    
         grafoCompleto.agregarArista(arista1)
     }
     
 
     // Se recorren las lineas del archivo a partir de la 6ta linea hasta el valor de aristas requeridas
-    // Las aristas no requeridas no nos importan
-    // Se les resta 1 a cada vertice para que comiencen en 0  y que no explote el algoritmo xdxdx
+    // Solo se recorren las aristas requeridas porque dicha informacion se usa para el grafo requerido y no para el completo
     for (i in 6..aristasReq + 6 - 1){
-    
+        
+        // Se lee la linea i del archivo
+        // Se filtra para eliminar todos los espacios innecesarios
         linea = archivo[i].split(" ").toList()
         linea = linea.filter { it != "" && it != " "}
-        //var lineaM = linea[1].split(",")
-
+        
+        // Variables donde se almacenan los datos de cada arista obtenidos del archivo de texto
         var u : Int
         var v : Int
         var cv1 : Double
  
-        
+        // Cuando el valor de alguno de los vertices de la arista es igual o mayor a 1000 se procesa la linea correspondiente
+        // de manera distinta, ya que el metodo split no separa los valores correctamente en estos casos
+        // Si no es el caso, se procesa la informacion normalmente       
         if (linea.size <= 5){
-            // Cuando los numeros de los vertices son muy grandes explotaba sin esto xd
+            
             var lineaM = linea[1].split(",")
 
             u = lineaM[0].toInt() - 1
@@ -116,7 +145,7 @@ fun main(args: Array<String>) {
             cv1 = linea[4].toDouble()
           
         }
-        
+        // Se crea el objeto tipo arista y se añade al grafo requerido en cada iteracion
         gRequerido.agregarArista(Arista(u,v,cv1))
         
     }
