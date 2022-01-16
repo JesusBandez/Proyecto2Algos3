@@ -4,7 +4,10 @@ package ve.usb.grafoLib
 public class CicloEulerianoGrafoNoDirigido(val g: GrafoNoDirigido) {
 
     /*
-    Clase para determinar el ciclo euleriano dentro de un grafo.    
+    Clase para determinar el ciclo euleriano dentro de un grafo no dirigido. La estrategia
+    consiste en conseguir el grafo dirigido asociado y cada vez que se selecciona un arco se 
+    elimina el arco que va en sentido contrario. Ademas, esta implementacion permite que hayan
+    lados repetidos  
     */
 
     // Indica si el grafo tiene un ciclo euleriano y 
