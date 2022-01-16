@@ -221,10 +221,10 @@ fun main(args: Array<String>) {
 
     // Imprimir los vertices del ciclo y conseguir el costo
     for (arco in ciclo){        
-        print("${deGRequeridoAGPrima.get(arco.fuente())!!+1} ")
+        print("${deGprimaAGRequerido.get(arco.fuente())!!+1} ")
         costo += arco.peso()
     }
-    println(ciclo.get(ciclo.size-1).sumidero()+1)
+    println(deGprimaAGRequerido.get(ciclo.get(ciclo.size-1).sumidero()+1))
 
     // Imprimir el costo
     println(costo)
