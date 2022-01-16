@@ -298,8 +298,7 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
             // Se usa ApareamientoVertexScan
 
             m = ApareamientoVertexScan(grafoG0).obtenerApareamiento() as MutableList
-        }
-     
+        }     
 
         var contadorDeNuevosVertices = 0
         for (arista in m){
