@@ -4,8 +4,7 @@ import java.time.Instant
 
 fun main(args: Array<String>) {
     
-    // Cuando se lee el txt agregar la arista (u,v) con costo cv1 y la arita (v,u) con costo cv2
-    // Modificar agregar arista para este fin
+    // Cuando se lee el txt agregar la arista (u,v) con costo cv1
 
     // Guardar el momento en el que inicia el algoritmo
     val inicio = Instant.now().toEpochMilli()
@@ -14,16 +13,8 @@ fun main(args: Array<String>) {
     val instancia : String = args[1]  
     var aristasReq : Int 
     var vertices : Int
-    var nombre : String
     var costo : Double = 0.0
-    
-
-
     var archivo = File(instancia).bufferedReader().readLines()
-
-    var linea0 = archivo[0].split(" ").toList()
-    linea0 = linea0.filter { it != "" && it != " "}
-    nombre = linea0[2]
 
     var linea2 = archivo[2].split(" ").toList()
     linea2 = linea2.filter { it != "" && it != " "}
@@ -32,8 +23,6 @@ fun main(args: Array<String>) {
     var linea3 = archivo[3].split(" ").toList()
     linea3 = linea3.filter { it != "" && it != " "}
     aristasReq = linea3[2].toInt()
-
-    println(nombre)
 
     var linea : List<String>
 
@@ -91,7 +80,7 @@ fun main(args: Array<String>) {
         var u : Int
         var v : Int
         var cv1 : Double
-        var cv2 : Double 
+ 
         
         if (linea.size <= 5){
             // Cuando los numeros de los vertices son muy grandes explotaba sin esto xd
@@ -100,20 +89,17 @@ fun main(args: Array<String>) {
             u = lineaM[0].toInt() - 1
             v = lineaM[1].dropLast(1).toInt() - 1
             cv1 = linea[3].toDouble()
-            cv2 = linea[4].toDouble()    
+           
 
         }else{
 
             u = linea[1].dropLast(1).toInt() - 1
             v = linea[2].dropLast(1).toInt() - 1
             cv1 = linea[4].toDouble()
-            cv2 = linea[5].toDouble()
+          
         }
         
         gRequerido.agregarArista(Arista(u,v,cv1))
-        if (cv1 != cv2 ){
-            print("error, pesos distintos")
-        }
         
     }
 
@@ -209,18 +195,24 @@ fun main(args: Array<String>) {
         //  Si el grafo gPrim no es conexo, se debe procesar por todas las lineas del algoritmo 1 presentado en el
         // enunciado del proyecto
         ciclo = aPartirDeLinea9(gPrim , grafoCompleto , algoritmo, deGprimaAGRequerido, deGRequeridoAGPrima)
-    }
-   
-    // Una vez obtenido el ciclo Euleriano, se consigue el costo del ciclo
-    for (arco in ciclo){
-        costo += arco.peso()
-    }
+    }   
+
 
     // Guardar el instante cuando termina el algoritmo 
     val fin = Instant.now().toEpochMilli()
-  
-    println("Costo de la solucion : $costo")
-    println("Tiempo que tomo encontrar la solucion : ${(fin-inicio).toDouble()/1000} segundos\n")
+
+    // Imprimir los vertices del ciclo y conseguir el costo
+    for (arco in ciclo){        
+        print("${deGRequeridoAGPrima.get(arco.fuente())!!+1} ")
+        costo += arco.peso()
+    }
+    println(ciclo.get(ciclo.size-1).sumidero()+1)
+
+    // Imprimir el costo
+    println(costo)
+    
+    // Imprimir el tiempo
+    println("${(fin-inicio).toDouble()/1000} segs.")
 }
 
 fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algoritmo: String, 
