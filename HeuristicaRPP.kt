@@ -4,13 +4,31 @@ import java.time.Instant
 
 fun main(args: Array<String>) {
     
+    // Comprobar argumentos
+
+    if (args.size > 2){
+        throw RuntimeException("Ha ingresado mas argumentos de los necesarios")
+    } else if (args.size < 2){
+        throw RuntimeException("Ha ingresado menos argumentos de los necesarios")
+    }
+
+    val algoritmo : String = args[0]
+    val instancia : String = args[1]  
+
+    if (algoritmo != "a".toString() && algoritmo != "v".toString()){
+        throw RuntimeException("Ingrese un algoritmo para conseguir el apareamiento: v o a")
+    }
+
+    if (!File(instancia).exists()){
+        throw RuntimeException("El archivo especificado que debe contener la instancia no existe")
+    }
+
     // Cuando se lee el txt agregar la arista (u,v) con costo cv1
 
     // Guardar el momento en el que inicia el algoritmo
     val inicio = Instant.now().toEpochMilli()
 
-    val algoritmo : String = args[0]
-    val instancia : String = args[1]  
+
     var aristasReq : Int 
     var vertices : Int
     var costo : Double = 0.0
