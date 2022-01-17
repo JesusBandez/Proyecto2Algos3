@@ -277,7 +277,7 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
     */
 
         // Se debe crear un nuevo grafo G0 a partir de los vertices con grado impar presentes en gPrim
-
+       
         // lista con los vertices impares
         var verticesImpares : MutableList<Int> = mutableListOf()
 
@@ -419,7 +419,7 @@ fun aPartirDeLinea16(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, alg
                 gTemp.agregarArista(Arista(deGRequeridoAGPrima.get(unVertice)!!, deGRequeridoAGPrima.get(elOtro)!!, lado.peso())) 
             }
         }
-
+        
         // gTemp ahora es el nuevo gPrima, se consigue el ciclo Euleriano de gTemp y se retorna
         return CicloEulerianoGrafoNoDirigido(gTemp).obtenerCicloEuleriano() as MutableList<Arco>
 }
@@ -437,7 +437,7 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
     Retorna:
     Una lista mutable de arcos que representan el Ciclo Euleriano que se pide como solución 
     */
-
+ 
         // Obtenemos las componentes conexas de gPrim para hacer Gt
         val compConexas = ComponentesConexasDFS(gPrim)
 
@@ -529,17 +529,18 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
 
         // Conseguir los vertices de Et que no estan en gPrim
         var cantidadDeNuevosVertices = 0
-
+        
         for (lado in ladosEt){
             // Conseguir el camino de coste minimo asociado al lado
             var unaComponente = lado.cualquieraDeLosVertices()
             var camino = caminosCostoMinimo[unaComponente][lado.elOtroVertice(unaComponente)]!!
-
+      
             for (arista in camino){
 
                 var unVertice = arista.cualquieraDeLosVertices()
                 var elOtroVertice = arista.elOtroVertice(unVertice)
-
+             
+          
                 // comprobar que los vertices del camino estan en gPrim. Si el vertice no tiene una representacion
                 // en el diccionario es porque no pertenece a gPrim.
                 if(deGRequeridoAGPrima.get(unVertice) == null){
@@ -553,8 +554,8 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
 
                 // Se hace lo mismo para el otro vertice
                 if(deGRequeridoAGPrima.get(elOtroVertice) == null){
-                    deGRequeridoAGPrima.put(unVertice, gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices)
-                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices, unVertice)
+                    deGRequeridoAGPrima.put(elOtroVertice, gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices)
+                    deGprimaAGRequerido.put(gPrim.obtenerNumeroDeVertices() + cantidadDeNuevosVertices, elOtroVertice)
 
                     cantidadDeNuevosVertices++
                 }
@@ -580,6 +581,7 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
             // Para cada arista en en el camino, se agrega una arista a gTemp.
             // Como la arista pertenece a un camino del grafoCompleto, es necesario conseguir la representacion
             // de los vertices de grafoCompleto en gPrima para agregarlos
+         
             for (arista in caminoCosteMinimo){
                 var unoDeLosVertices = arista.cualquieraDeLosVertices()
                 var elOtroDeLosVertice = arista.elOtroVertice(unoDeLosVertices)
@@ -588,7 +590,6 @@ fun aPartirDeLinea9(gPrim: GrafoNoDirigido, grafoCompleto: GrafoNoDirigido, algo
                     deGRequeridoAGPrima.get(unoDeLosVertices)!!, deGRequeridoAGPrima.get(elOtroDeLosVertice)!!, arista.peso()))
             }
         }
-
     // A partir de este momento gTemp es gPrim, y es conexo. Por tanto, se ejecutan las lineas 16 del algoritmo 1
     // y se retorna el ciclo euleriano
     return aPartirDeLinea16(gTemp, grafoCompleto, algoritmo, deGprimaAGRequerido, deGRequeridoAGPrima)
